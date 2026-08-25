@@ -235,8 +235,8 @@ textarea.q-in{resize:vertical;line-height:1.5}
   <button class="nav-btn" data-view="dashboard" onclick="go('dashboard')">▦ Dashboard</button>
   <button class="nav-btn active" data-view="priority" onclick="go('priority')">◉ Priority View</button>
   <button class="nav-btn" data-view="clients" onclick="go('clients')">▤ Clients</button>
-  <button class="nav-btn" data-view="tasks" onclick="go('tasks')">☑ Tasks</button>
-  <button class="nav-btn" data-view="quote" onclick="go('quote')" style="color:#c4b5fd">✚ New Quote</button>
+  <button class="nav-btn" data-view="leads" onclick="go('leads')" style="color:#7dd3fc">◎ Leads</button><button class="nav-btn" data-view="tasks" onclick="go('tasks')">☑ Tasks</button>
+  <button class="nav-btn" data-view="qq" onclick="go('qq')" style="color:#c4b5fd">⚡ Quick Quote</button><button class="nav-btn" data-view="quote" onclick="go('quote')">✚ Full Quote</button>
   <div class="nav-spacer"></div>
   <input class="nav-search" id="globalSearch" placeholder="Search clients..." oninput="globalSearch(this.value)">
   <div class="nav-user"><div class="avatar" id="navAvatar">?</div><span id="navUser">—</span><a href="#" onclick="doSignOut(event)" style="margin-left:10px;font-size:11px;color:var(--text-muted)">Sign out</a></div>
@@ -388,6 +388,64 @@ textarea.q-in{resize:vertical;line-height:1.5}
       </div>
     </div>
     <div class="q-preview"><div id="propPrint"></div></div>
+  </div>
+</div>
+
+<!-- ================= LEADS ================= -->
+<div class="view" id="view-leads">
+  <div class="page-head">
+    <div>
+      <div class="page-title" style="background:linear-gradient(90deg,#7dd3fc,#22c55e);-webkit-background-clip:text;background-clip:text">BoldPenguin Leads</div>
+      <div class="page-sub">Every lead purchased from the exchange — synced automatically from the daily reports. Click a phone number to call.</div>
+    </div>
+    <div class="filters">
+      <input class="filter-input" id="ldSearch" placeholder="Search name or phone..." oninput="renderLeads()">
+      <select class="filter-select" id="ldMonth" onchange="renderLeads()"><option value="">All Months</option></select>
+      <select class="filter-select" id="ldState" onchange="renderLeads()"><option value="">All States</option></select>
+      <select class="filter-select" id="ldStatus" onchange="renderLeads()"><option value="">All Statuses</option><option>new</option><option>called</option><option>quoted</option><option>won</option><option>dead</option></select>
+    </div>
+  </div>
+  <div class="kpi-row" id="ldKpis"></div>
+  <div class="stage" style="--stage-c:#7dd3fc">
+    <div class="stage-body"><div style="overflow-x:auto"><table id="leadsTable"></table></div></div>
+    <div class="stage-foot" id="ldFoot"></div>
+  </div>
+</div>
+
+<!-- ================= QUICK QUOTE ================= -->
+<div class="view" id="view-qq">
+  <div class="page-head">
+    <div>
+      <div class="page-title" style="background:linear-gradient(90deg,#c4b5fd,#7dd3fc);-webkit-background-clip:text;background-clip:text">Quick Quote</div>
+      <div class="page-sub">Three steps: who it's for, what coverage, two numbers — the full proposal builds itself</div>
+    </div>
+  </div>
+  <div class="q-card" style="max-width:660px">
+    <h3>1 · Who is this quote for?</h3>
+    <input class="q-in" id="qqName" list="qqNames" placeholder="Start typing a lead, client, or new business name..." style="width:100%;font-size:14px;padding:12px;box-sizing:border-box" oninput="qqMatch()">
+    <datalist id="qqNames"></datalist>
+    <div id="qqPicked" style="font-size:11.5px;color:#86efac;margin-top:6px;min-height:14px"></div>
+    <div class="q-grid2" style="margin-top:8px">
+      <div class="fld"><label>State</label><select class="filter-select" id="qqState" style="width:100%"><option>FL</option><option>TX</option><option>PA</option><option>CA</option><option value="">Other</option></select></div>
+      <div class="fld"><label>What do they do?</label><input class="q-in" id="qqDesc" placeholder="e.g. Tree services"></div>
+    </div>
+  </div>
+  <div class="q-card" style="max-width:660px">
+    <h3>2 · Coverage <span style="color:var(--text-muted);font-weight:400;font-size:11px">— tap to select</span></h3>
+    <div class="q-chips" id="qqChips"></div>
+  </div>
+  <div class="q-card" style="max-width:660px">
+    <h3>3 · The numbers</h3>
+    <div class="q-grid2">
+      <div class="fld"><label>What the carrier quoted you (wholesale $)</label><input class="q-in" id="qqWholesale" placeholder="$" style="font-size:15px" oninput="qqTotals()"></div>
+      <div class="fld"><label>Your broker fee ($)</label><input class="q-in" id="qqFee" value="500" style="font-size:15px" oninput="qqTotals()"></div>
+    </div>
+    <div id="qqTotal" style="margin-top:12px;font-size:13.5px;color:var(--text-secondary);min-height:18px"></div>
+  </div>
+  <div class="q-card" style="max-width:660px">
+    <button class="act-btn primary" style="width:100%;justify-content:center;padding:14px;font-size:14px" onclick="qqBuild()">⚡ Build the proposal →</button>
+    <div id="qqErr" style="font-size:12px;color:#fca5a5;margin-top:8px;min-height:14px"></div>
+    <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">This fills the full proposal for you. On the next screen: <b>🖨 Print / Save PDF</b> for the client-ready quote, and <b>＋ Add to book</b> to save it to the shared CRM.</div>
   </div>
 </div>
 
@@ -1089,7 +1147,7 @@ function qAddToBook(){
 
 /* ---------- init ---------- */
 let _appInited=false;
-function rerenderAll(){ renderPriority(); renderDashboard(); renderClients(); renderTasks(); }
+function rerenderAll(){ renderPriority(); renderDashboard(); renderClients(); renderTasks(); if (typeof renderLeads==='function') renderLeads(); }
 function initApp(){
   if(_appInited){ rerenderAll(); return; }
   _appInited=true;
@@ -1172,7 +1230,8 @@ async function enterApp(){
   const em=(user&&user.email)||'—';
   $('navUser').textContent=em; $('navAvatar').textContent=initials(em.split('@')[0].replace(/[._]/g,' '));
   $('authWrap').style.display='none';
-  decorate(); initApp();
+  await loadLeads();
+  decorate(); initApp(); renderLeads(); qqInit();
 }
 
 async function saveClient(c){
@@ -1234,6 +1293,141 @@ async function qAddToBook(){
   const {data:{session}} = await sb.auth.getSession();
   if(session) enterApp();
 })();
+
+/* ================= Leads tab ================= */
+let LEADS = [];
+let LEAD_STATUS = {};
+let REFUND_PHONES = new Set();
+function leadKey(d){ return (d.phone_number||'') + '|' + (d.sent_timestamp_edt||''); }
+async function loadLeads(){
+  try{
+    const [lu, st] = await Promise.all([
+      sb.from('leads_unique').select('id,data'),
+      sb.from('lead_status').select('lead_key,status')
+    ]);
+    const rows = lu.data || [];
+    LEADS = rows.filter(x=>x.data && x.data._type==='lead');
+    REFUND_PHONES = new Set(rows.filter(x=>x.data && x.data._type==='refund').map(x=>x.data.phone_number||''));
+    LEAD_STATUS = {};
+    (st.data||[]).forEach(r=>{ LEAD_STATUS[r.lead_key]=r.status; });
+    LEADS.sort((a,b)=> String(b.data.sent_timestamp_edt||'').localeCompare(String(a.data.sent_timestamp_edt||'')));
+  }catch(e){ LEADS = []; }
+}
+let _ldFiltersDone = false;
+function renderLeads(){
+  if(!$('leadsTable')) return;
+  if(!_ldFiltersDone && LEADS.length){
+    _ldFiltersDone = true;
+    [...new Set(LEADS.map(l=>String(l.data.sent_timestamp_edt||'').slice(0,7)).filter(Boolean))].sort().reverse()
+      .forEach(m=>$('ldMonth').insertAdjacentHTML('beforeend',`<option>${m}</option>`));
+    [...new Set(LEADS.map(l=>l.data.state).filter(Boolean))].sort()
+      .forEach(s=>$('ldState').insertAdjacentHTML('beforeend',`<option>${s}</option>`));
+  }
+  const q=($('ldSearch').value||'').toLowerCase(), mo=$('ldMonth').value, st=$('ldState').value, stat=$('ldStatus').value;
+  const rows = LEADS.filter(l=>{ const d=l.data;
+    if(q && !(((d.legal_entity||'')+' '+(d.phone_number||'')).toLowerCase().includes(q))) return false;
+    if(mo && String(d.sent_timestamp_edt||'').slice(0,7)!==mo) return false;
+    if(st && d.state!==st) return false;
+    if(stat && (LEAD_STATUS[leadKey(d)]||'new')!==stat) return false;
+    return true; });
+  const nowMo = new Date().toISOString().slice(0,7);
+  const inMo = l=>String(l.data.sent_timestamp_edt||'').slice(0,7)===nowMo;
+  const sum = a=>a.reduce((s,l)=>s+(Number(l.data.purchase_amount)||0),0);
+  const worked = LEADS.filter(l=>['called','quoted','won'].includes(LEAD_STATUS[leadKey(l.data)])).length;
+  $('ldKpis').innerHTML = [
+    ['◎','Leads this month', LEADS.filter(inMo).length],
+    ['＄','Spend this month', fmt$(sum(LEADS.filter(inMo)))],
+    ['∑','All-time leads', LEADS.length],
+    ['⌀','Avg cost per lead', LEADS.length?fmt$(sum(LEADS)/LEADS.length):'—'],
+    ['✆','Worked (called+)', worked]
+  ].map(k=>`<div class="kpi"><span class="ic">${k[0]}</span><h4>${k[2]}</h4><p>${k[1]}</p></div>`).join('');
+  $('leadsTable').innerHTML = '<thead><tr><th>Received</th><th>Business</th><th>Phone — click to call</th><th>Class</th><th>Coverage</th><th>State</th><th>Cost</th><th>Status</th><th></th></tr></thead><tbody>'+
+   (rows.map(l=>{ const d=l.data; const ph=d.phone_number||''; const tel=ph.replace(/[^0-9]/g,''); const key=leadKey(d); const refd=REFUND_PHONES.has(ph);
+    return `<tr>
+     <td><span class="date-chip">${esc(String(d.sent_timestamp_edt||d._report_date||'').slice(0,16))}</span></td>
+     <td style="font-weight:600;max-width:200px">${esc(d.legal_entity||'—')}${refd?' <span class="pill p-expired" style="font-size:9px">refunded</span>':''}</td>
+     <td>${ph?`<a class="act-btn primary" style="padding:4px 10px" href="tel:+1${tel}">✆ ${esc(ph)}</a>`:'—'}</td>
+     <td style="max-width:230px;font-size:11px;color:var(--text-secondary)">${esc(String(d.business_class||'').replace(/^[0-9]+\s*-\s*/,'').slice(0,55))}</td>
+     <td style="font-size:11px">${esc(String(d.coverage_type||'—').slice(0,42))}</td>
+     <td>${esc(d.state||'—')}</td>
+     <td style="font-weight:600">${d.purchase_amount!=null?'$'+d.purchase_amount:'—'}</td>
+     <td><select class="filter-select" style="padding:4px 8px;font-size:11px" onchange="setLeadStatus('${esc(key)}',this.value)">${['new','called','quoted','won','dead'].map(s=>`<option ${((LEAD_STATUS[key]||'new')===s)?'selected':''}>${s}</option>`).join('')}</select></td>
+     <td><button class="act-btn" style="color:#c4b5fd" onclick="qqFromLeadKey('${esc(key)}')">⚡ Quote</button></td></tr>`; }).join('')||'<tr><td colspan="9"><div class="empty-note">No leads match</div></td></tr>')+'</tbody>';
+  $('ldFoot').textContent = `● ${rows.length} shown of ${LEADS.length} unique leads · syncs automatically from BoldPenguin daily reports`;
+}
+async function setLeadStatus(key, v){
+  LEAD_STATUS[key] = v;
+  try{ await sb.from('lead_status').upsert({ lead_key:key, status:v }); }catch(e){}
+  renderLeads();
+}
+
+/* ================= Quick Quote ================= */
+const QQ_LINES = ['GL','WC','Commercial Auto','Property','Excess','Professional'];
+let qqSel = ['GL'];
+function qqInit(){
+  if(!$('qqChips')) return;
+  $('qqChips').innerHTML = QQ_LINES.map(k=>`<button class="q-chip ${qqSel.includes(k)?'on':''}" onclick="qqToggle('${k}')">${(Q_LINES[k]&&Q_LINES[k].label)||k}</button>`).join('');
+  const dl = $('qqNames');
+  if(dl && !dl.childElementCount){
+    LEADS.slice(0,200).forEach(l=>{ if(l.data.legal_entity) dl.insertAdjacentHTML('beforeend',`<option value="${esc(l.data.legal_entity)}">`); });
+    CLIENTS.forEach(c=>{ if(c.businessName) dl.insertAdjacentHTML('beforeend',`<option value="${esc(c.businessName)}">`); });
+  }
+  qqTotals();
+}
+function qqToggle(k){ qqSel = qqSel.includes(k)?qqSel.filter(x=>x!==k):[...qqSel,k]; if(!qqSel.length) qqSel=['GL']; qqInit(); }
+function qqGuessLines(cov){
+  const c = String(cov||''); const out = [];
+  if(/general liability/i.test(c)) out.push('GL');
+  if(/workers/i.test(c)) out.push('WC');
+  if(/auto/i.test(c)) out.push('Commercial Auto');
+  if(/property/i.test(c)) out.push('Property');
+  if(/professional|e&o/i.test(c)) out.push('Professional');
+  return out.length?out:['GL'];
+}
+function qqMatch(){
+  const n = qs('qqName').toLowerCase();
+  if(!n){ $('qqPicked').textContent=''; return; }
+  const l = LEADS.find(x=>(x.data.legal_entity||'').toLowerCase()===n);
+  const c = CLIENTS.find(x=>(x.businessName||'').toLowerCase()===n);
+  if(l){
+    const d = l.data;
+    if(d.state) $('qqState').value = d.state;
+    $('qqDesc').value = String(d.business_class||'').replace(/^[0-9]+\s*-\s*/,'');
+    qqSel = qqGuessLines(d.coverage_type); qqInit();
+    $('qqPicked').textContent = '✓ Matched BoldPenguin lead — state, operations & coverage pre-filled';
+  } else if(c){
+    if(c.state) $('qqState').value = c.state;
+    $('qqDesc').value = c.operations||'';
+    $('qqPicked').textContent = '✓ Matched existing client — state & operations pre-filled';
+  } else $('qqPicked').textContent = '';
+}
+function qqTotals(){
+  const w = qv('qqWholesale'), f = qv('qqFee')||0;
+  if($('qqTotal')) $('qqTotal').innerHTML = (w==null)?'':`Client pays <b style="color:var(--text-primary)">${qMoney(w+f)}</b> total — about ${qMoney((w+f)*0.35)} down + 9 monthly payments of ~${qMoney(((w+f)*0.65*1.06)/9)}`;
+}
+function qqFromLeadKey(key){
+  const l = LEADS.find(x=>leadKey(x.data)===key); if(!l) return;
+  go('qq');
+  $('qqName').value = l.data.legal_entity||'';
+  qqMatch();
+  window.scrollTo(0,0);
+}
+function qqBuild(){
+  const name = qs('qqName'); const w = qv('qqWholesale'); const f = qv('qqFee')||0;
+  if(!name){ $('qqErr').textContent='Type the business name first.'; return; }
+  if(w==null){ $('qqErr').textContent='Enter the wholesale premium — the number the carrier quoted you.'; return; }
+  $('qqErr').textContent='';
+  $('qName').value = name;
+  $('qState').value = $('qqState').value;
+  $('qDesc').value = qs('qqDesc');
+  $('qWholesale').value = w;
+  $('qFee1').value = f;
+  $('qRetail').value = (w + f);
+  qSel = qqSel.slice();
+  qRenderChips(); qFees(); qRender();
+  go('quote');
+  window.scrollTo(0,0);
+}
 
 </script>
 </body>
