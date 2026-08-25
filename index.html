@@ -1313,9 +1313,30 @@ async function loadLeads(){
     LEADS.sort((a,b)=> String(b.data.sent_timestamp_edt||'').localeCompare(String(a.data.sent_timestamp_edt||'')));
   }catch(e){ LEADS = []; }
 }
+/* ---- automatic lead→client conversion matching (the "bot") ---- */
+const _norm = s => String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+let _CLIENT_IDX = null;
+function clientIndex(){
+  if(_CLIENT_IDX) return _CLIENT_IDX;
+  const byName = new Map(), byPhone = new Map();
+  (CLIENTS||[]).forEach(c=>{
+    const n=_norm(c.businessName); if(n.length>4) byName.set(n,c);
+    const p=String(c.phone||'').replace(/[^0-9]/g,''); if(p.length>=10) byPhone.set(p.slice(-10),c);
+  });
+  _CLIENT_IDX = {byName, byPhone}; return _CLIENT_IDX;
+}
+function leadMatch(d){
+  const idx=clientIndex();
+  const n=_norm(d.legal_entity); const p=String(d.phone_number||'').replace(/[^0-9]/g,'').slice(-10);
+  let c = (n.length>4 && idx.byName.get(n)) || (p.length===10 && idx.byPhone.get(p)) || null;
+  if(!c) return {converted:false, bound:false};
+  const bound = c.stage==='bound' || (c._bucket && ['active','due30','due60','due90'].includes(c._bucket));
+  return {converted:true, bound:!!bound, client:c};
+}
 let _ldFiltersDone = false;
 function renderLeads(){
   if(!$('leadsTable')) return;
+  _CLIENT_IDX = null; // rebuild against latest book
   if(!_ldFiltersDone && LEADS.length){
     _ldFiltersDone = true;
     [...new Set(LEADS.map(l=>String(l.data.sent_timestamp_edt||'').slice(0,7)).filter(Boolean))].sort().reverse()
@@ -1333,19 +1354,25 @@ function renderLeads(){
   const nowMo = new Date().toISOString().slice(0,7);
   const inMo = l=>String(l.data.sent_timestamp_edt||'').slice(0,7)===nowMo;
   const sum = a=>a.reduce((s,l)=>s+(Number(l.data.purchase_amount)||0),0);
-  const worked = LEADS.filter(l=>['called','quoted','won'].includes(LEAD_STATUS[leadKey(l.data)])).length;
+  const matches = LEADS.map(l=>leadMatch(l.data));
+  const bound = matches.filter(m=>m.bound).length;
+  const totalSpend = sum(LEADS);
+  const convRate = LEADS.length? Math.round(bound/LEADS.length*100):0;
+  const cpb = bound? fmt$(totalSpend/bound):'—';
   $('ldKpis').innerHTML = [
     ['◎','Leads this month', LEADS.filter(inMo).length],
     ['＄','Spend this month', fmt$(sum(LEADS.filter(inMo)))],
     ['∑','All-time leads', LEADS.length],
-    ['⌀','Avg cost per lead', LEADS.length?fmt$(sum(LEADS)/LEADS.length):'—'],
-    ['✆','Worked (called+)', worked]
+    ['⌀','Avg cost per lead', LEADS.length?fmt$(totalSpend/LEADS.length):'—'],
+    ['✅','Bound from leads', bound+' ('+convRate+'%)'],
+    ['🎯','Cost per bound acct', cpb]
   ].map(k=>`<div class="kpi"><span class="ic">${k[0]}</span><h4>${k[2]}</h4><p>${k[1]}</p></div>`).join('');
   $('leadsTable').innerHTML = '<thead><tr><th>Received</th><th>Business</th><th>Phone — click to call</th><th>Class</th><th>Coverage</th><th>State</th><th>Cost</th><th>Status</th><th></th></tr></thead><tbody>'+
-   (rows.map(l=>{ const d=l.data; const ph=d.phone_number||''; const tel=ph.replace(/[^0-9]/g,''); const key=leadKey(d); const refd=REFUND_PHONES.has(ph);
+   (rows.map(l=>{ const d=l.data; const ph=d.phone_number||''; const tel=ph.replace(/[^0-9]/g,''); const key=leadKey(d); const refd=REFUND_PHONES.has(ph); const mm=leadMatch(d);
+    const wonBadge = mm.bound?' <span class="pill" style="font-size:9px;background:#16a76522;color:#4ade80;border-color:#16a76555">✓ bound</span>':(mm.converted?' <span class="pill p-quoted" style="font-size:9px">in book</span>':'');
     return `<tr>
      <td><span class="date-chip">${esc(String(d.sent_timestamp_edt||d._report_date||'').slice(0,16))}</span></td>
-     <td style="font-weight:600;max-width:200px">${esc(d.legal_entity||'—')}${refd?' <span class="pill p-expired" style="font-size:9px">refunded</span>':''}</td>
+     <td style="font-weight:600;max-width:200px">${esc(d.legal_entity||'—')}${wonBadge}${refd?' <span class="pill p-expired" style="font-size:9px">refunded</span>':''}</td>
      <td>${ph?`<a class="act-btn primary" style="padding:4px 10px" href="tel:+1${tel}">✆ ${esc(ph)}</a>`:'—'}</td>
      <td style="max-width:230px;font-size:11px;color:var(--text-secondary)">${esc(String(d.business_class||'').replace(/^[0-9]+\s*-\s*/,'').slice(0,55))}</td>
      <td style="font-size:11px">${esc(String(d.coverage_type||'—').slice(0,42))}</td>
