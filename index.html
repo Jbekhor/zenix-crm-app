@@ -1993,5 +1993,168 @@ function ixNext(){ if(ixCanAdvance()&&ixStep<6){ixStep++; ixRender(); window.scr
 function ixPrev(){ if(ixStep>0){ixStep--; ixRender(); window.scrollTo({top:0,behavior:'smooth'});} }
 
 </script>
+
+<!-- ================= REAL-TIME LEADS (v3, 2026-08-26) =================
+     Pushes new BoldPenguin leads into the open page the moment the webhook
+     writes them. Supabase Realtime on public.leads is the primary channel;
+     a lightweight head-count poll is the fallback for a dropped socket or a
+     laptop waking from sleep. Nothing here changes how leads are stored. -->
+<style>
+#ldLiveWrap{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.ld-toast{min-width:260px;max-width:340px;background:#0b1220f2;border:1px solid #22c55e66;border-left:3px solid #22c55e;
+  border-radius:10px;padding:11px 13px;box-shadow:0 10px 34px #000a;backdrop-filter:blur(6px);cursor:pointer;
+  animation:ldIn .32s cubic-bezier(.2,.9,.3,1.3);font-size:12.5px;color:#e2e8f0}
+.ld-toast b{display:block;font-size:13.5px;color:#7dd3fc;margin-bottom:2px}
+.ld-toast .sub{color:#94a3b8;font-size:11.5px;margin-top:3px}
+.ld-toast.out{animation:ldOut .3s forwards}
+@keyframes ldIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes ldOut{to{opacity:0;transform:translateX(24px)}}
+#ldLiveDot{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:#4ade80;margin-left:10px;vertical-align:middle}
+#ldLiveDot i{width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;animation:ldPulse 2s infinite}
+#ldLiveDot.stale{color:#fbbf24} #ldLiveDot.stale i{background:#fbbf24;animation:none}
+@keyframes ldPulse{0%,100%{box-shadow:0 0 0 0 #22c55e88}70%{box-shadow:0 0 0 6px #22c55e00}}
+.nav-badge{display:inline-block;min-width:16px;padding:0 5px;margin-left:5px;border-radius:9px;background:#22c55e;
+  color:#04170c;font-size:10px;font-weight:800;line-height:16px;text-align:center}
+</style>
+<div id="ldLiveWrap"></div>
+<script>
+(function(){
+  var POLL_MS = 45000, booted = false, chan = null, poller = null;
+  var lastSeen = null;           // ISO of the newest leads.created_at we know about
+  var unseen = 0;                // new leads that arrived while off the Leads tab
+  var wrap = function(){ return document.getElementById('ldLiveWrap'); };
+
+  function chime(){
+    try{
+      var C = window.AudioContext || window.webkitAudioContext; if(!C) return;
+      var ctx = new C(), o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.type = 'sine';
+      o.frequency.setValueAtTime(880, ctx.currentTime);
+      o.frequency.setValueAtTime(1320, ctx.currentTime + 0.11);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.42);
+      o.start(); o.stop(ctx.currentTime + 0.45);
+    }catch(e){}
+  }
+
+  function toast(d){
+    var w = wrap(); if(!w) return;
+    var cost = (d && d.purchase_amount != null) ? ('$' + d.purchase_amount) : '';
+    var bits = [d && d.state, String((d && d.business_class) || '').replace(/^[0-9]+\s*-\s*/, ''), cost]
+                 .filter(Boolean).join(' · ');
+    var el = document.createElement('div');
+    el.className = 'ld-toast';
+    el.innerHTML = '<b>◎ New lead — ' + esc((d && d.legal_entity) || 'BoldPenguin') + '</b>' +
+                   esc((d && d.phone_number) || '') +
+                   (bits ? '<div class="sub">' + esc(bits.slice(0, 70)) + '</div>' : '') +
+                   '<div class="sub">click to open Leads</div>';
+    el.onclick = function(){ try{ go('leads'); }catch(e){} el.remove(); clearBadge(); };
+    w.appendChild(el);
+    setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 320); }, 12000);
+  }
+
+  function badge(){
+    var b = document.querySelector('.nav-btn[data-view="leads"]'); if(!b) return;
+    var s = b.querySelector('.nav-badge');
+    if(!unseen){ if(s) s.remove(); return; }
+    if(!s){ s = document.createElement('span'); s.className = 'nav-badge'; b.appendChild(s); }
+    s.textContent = unseen;
+  }
+  function clearBadge(){ unseen = 0; badge(); }
+
+  function dot(ok){
+    var f = document.getElementById('ldFoot'); if(!f) return;
+    var d = document.getElementById('ldLiveDot');
+    if(!d){ d = document.createElement('span'); d.id = 'ldLiveDot'; f.appendChild(d); }
+    d.className = ok ? '' : 'stale';
+    d.innerHTML = '<i></i>' + (ok ? 'live' : 'reconnecting…');
+  }
+
+  // Full refresh of the leads dataset + repaint, preserving the user's filters.
+  async function refresh(newRows){
+    try{
+      await loadLeads();
+      if(typeof renderLeads === 'function') renderLeads();
+      dot(true);
+      (newRows || []).forEach(function(d){ toast(d); });
+      if(newRows && newRows.length){
+        chime();
+        var onLeads = (document.getElementById('view-leads') || {}).classList;
+        if(!onLeads || !onLeads.contains('active')){ unseen += newRows.length; badge(); }
+      }
+    }catch(e){}
+  }
+
+  // Fallback: ask only for a count of rows newer than what we've seen.
+  async function poll(){
+    try{
+      var q = sb.from('leads').select('id', { count: 'exact', head: true });
+      if(lastSeen) q = q.gt('created_at', lastSeen);
+      var r = await q;
+      if(r.error) { dot(false); return; }
+      if(lastSeen === null){ lastSeen = new Date().toISOString(); dot(true); return; }
+      if((r.count || 0) > 0){
+        lastSeen = new Date().toISOString();
+        var before = LEADS.length;
+        await refresh([]);
+        if(LEADS.length > before) { chime(); toast(LEADS[0] && LEADS[0].data); }
+      } else { dot(true); }
+    }catch(e){ dot(false); }
+  }
+
+  function subscribe(){
+    try{
+      if(chan) { try{ sb.removeChannel(chan); }catch(e){} }
+      chan = sb.channel('leads-live')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, function(p){
+          var d = p && p.new && p.new.data;
+          if(!d || d._type !== 'lead') return;
+          lastSeen = new Date().toISOString();
+          refresh([d]);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_status' }, function(){
+          refresh([]);
+        })
+        .subscribe(function(status){
+          dot(status === 'SUBSCRIBED');
+          if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){ setTimeout(subscribe, 5000); }
+        });
+    }catch(e){ dot(false); }
+  }
+
+  function start(){
+    if(booted) return; booted = true;
+    lastSeen = new Date().toISOString();
+    subscribe();
+    poller = setInterval(poll, POLL_MS);
+    // A sleeping laptop kills the socket; catch up the moment the tab is looked at.
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState === 'visible'){ subscribe(); poll(); }
+    });
+    window.addEventListener('online', function(){ subscribe(); poll(); });
+    var nav = document.querySelector('.nav-btn[data-view="leads"]');
+    if(nav) nav.addEventListener('click', clearBadge);
+    var sub = document.querySelector('#view-leads .page-sub');
+    if(sub) sub.textContent = 'Every lead purchased from the exchange — pushed in live the second BoldPenguin sends it, and reconciled against the daily report. Click a phone number to call.';
+    dot(true);
+  }
+
+  // Wait until the app has signed in and loaded its first batch of leads.
+  var tries = 0;
+  var waiter = setInterval(function(){
+    // Guarded: if the app's own scripts failed to run, LEADS stays in the
+    // temporal dead zone and a bare `typeof` throws. Never spam the console.
+    try{
+      if(++tries > 1200){ clearInterval(waiter); return; }   // give up after ~14 min
+      var authed = document.getElementById('authWrap') && document.getElementById('authWrap').style.display === 'none';
+      if(!authed || !document.getElementById('ldFoot')) return;
+      if(typeof LEADS === 'undefined' || typeof loadLeads !== 'function') return;
+      clearInterval(waiter); start();
+    }catch(e){ /* app not ready (or broken) - keep quiet */ }
+  }, 700);
+})();
+</script>
+
 </body>
 </html>
