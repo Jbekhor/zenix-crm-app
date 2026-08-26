@@ -1993,7 +1993,6 @@ function ixNext(){ if(ixCanAdvance()&&ixStep<6){ixStep++; ixRender(); window.scr
 function ixPrev(){ if(ixStep>0){ixStep--; ixRender(); window.scrollTo({top:0,behavior:'smooth'});} }
 
 </script>
-
 <!-- ================= REAL-TIME LEADS (v3, 2026-08-26) =================
      Pushes new BoldPenguin leads into the open page the moment the webhook
      writes them. Supabase Realtime on public.leads is the primary channel;
@@ -2019,7 +2018,7 @@ function ixPrev(){ if(ixStep>0){ixStep--; ixRender(); window.scrollTo({top:0,beh
 <div id="ldLiveWrap"></div>
 <script>
 (function(){
-  var POLL_MS = 45000, booted = false, chan = null, poller = null;
+  var POLL_MS = 45000, booted = false, chan = null, poller = null, lastOk = true;
   var lastSeen = null;           // ISO of the newest leads.created_at we know about
   var unseen = 0;                // new leads that arrived while off the Leads tab
   var wrap = function(){ return document.getElementById('ldLiveWrap'); };
@@ -2064,6 +2063,7 @@ function ixPrev(){ if(ixStep>0){ixStep--; ixRender(); window.scrollTo({top:0,beh
   function clearBadge(){ unseen = 0; badge(); }
 
   function dot(ok){
+    lastOk = ok;
     var f = document.getElementById('ldFoot'); if(!f) return;
     var d = document.getElementById('ldLiveDot');
     if(!d){ d = document.createElement('span'); d.id = 'ldLiveDot'; f.appendChild(d); }
@@ -2135,6 +2135,16 @@ function ixPrev(){ if(ixStep>0){ixStep--; ixRender(); window.scrollTo({top:0,beh
     window.addEventListener('online', function(){ subscribe(); poll(); });
     var nav = document.querySelector('.nav-btn[data-view="leads"]');
     if(nav) nav.addEventListener('click', clearBadge);
+    // renderLeads() rewrites the footer text, which wipes the indicator - put it
+    // back after every repaint so a filter change doesn't look like it went dead.
+    if(typeof renderLeads === 'function'){
+      var _origRender = renderLeads;
+      window.renderLeads = renderLeads = function(){
+        var r = _origRender.apply(this, arguments);
+        try{ dot(lastOk); }catch(e){}
+        return r;
+      };
+    }
     var sub = document.querySelector('#view-leads .page-sub');
     if(sub) sub.textContent = 'Every lead purchased from the exchange — pushed in live the second BoldPenguin sends it, and reconciled against the daily report. Click a phone number to call.';
     dot(true);
