@@ -233,10 +233,10 @@ textarea.q-in{resize:vertical;line-height:1.5}
 <nav class="topnav">
   <div class="logo"><div class="logo-mark">⚡</div><div class="logo-name">ZENIX</div></div>
   <button class="nav-btn" data-view="dashboard" onclick="go('dashboard')">▦ Dashboard</button>
-  <button class="nav-btn active" data-view="priority" onclick="go('priority')">◉ Priority View</button>
+  <button class="nav-btn active" data-view="priority" onclick="go('priority')">◉ Priority View</button><button class="nav-btn" data-view="pipeline" onclick="go('pipeline')" style="color:#7dd3fc">◫ Pipeline</button>
   <button class="nav-btn" data-view="clients" onclick="go('clients')">▤ Clients</button>
   <button class="nav-btn" data-view="leads" onclick="go('leads')" style="color:#7dd3fc">◎ Leads</button><button class="nav-btn" data-view="tasks" onclick="go('tasks')">☑ Tasks</button>
-  <button class="nav-btn" data-view="qq" onclick="go('qq')" style="color:#c4b5fd">⚡ Quick Quote</button><button class="nav-btn" data-view="quote" onclick="go('quote')">✚ Full Quote</button>
+  <button class="nav-btn" data-view="intake" onclick="ixStart()" style="color:#4ade80">➕ Smart Intake</button><button class="nav-btn" data-view="qq" onclick="go('qq')" style="color:#c4b5fd">⚡ Quick Quote</button><button class="nav-btn" data-view="quote" onclick="go('quote')">✚ Full Quote</button>
   <div class="nav-spacer"></div>
   <input class="nav-search" id="globalSearch" placeholder="Search clients..." oninput="globalSearch(this.value)">
   <div class="nav-user"><div class="avatar" id="navAvatar">?</div><span id="navUser">—</span><a href="#" onclick="doSignOut(event)" style="margin-left:10px;font-size:11px;color:var(--text-muted)">Sign out</a></div>
@@ -448,6 +448,92 @@ textarea.q-in{resize:vertical;line-height:1.5}
     <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">This fills the full proposal for you. On the next screen: <b>🖨 Print / Save PDF</b> for the client-ready quote, and <b>＋ Add to book</b> to save it to the shared CRM.</div>
   </div>
 </div>
+
+<!-- ================= LIFECYCLE EXTENSIONS (Pipeline + Smart Intake) ================= -->
+<style>
+/* lifecycle bar */
+.life{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin:2px 0 4px}
+.lifeseg{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-muted)}
+.lifeseg .dot{width:22px;height:22px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border-color);display:flex;align-items:center;justify-content:center;font-size:11px}
+.lifeseg.on{color:var(--text-primary)}.lifeseg.on .dot{background:linear-gradient(135deg,#6d5ef0,#06b6d4);border:none}
+.lifeseg.done{color:#4ade80}.lifeseg.done .dot{background:#22c55e;border:none;color:#04120a}
+.lifearrow{width:22px;height:1px;background:var(--border-color);margin:0 7px}
+@media(max-width:760px){.lifeseg span.lbl{display:none}.lifearrow{width:10px;margin:0 3px}}
+/* pipeline board */
+.pl-board{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px}
+.pl-col{background:var(--bg-surface);border:1px solid var(--border-color);border-radius:14px;padding:10px;min-height:120px}
+.pl-col.drop{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple) inset}
+.pl-colhead{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:4px 6px 10px;border-bottom:1px solid var(--border-color);margin-bottom:8px}
+.pl-colhead .cnt{margin-left:auto;background:#ffffff14;border-radius:20px;padding:1px 8px;font-size:11px;color:var(--text-secondary)}
+.pl-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:11px;padding:10px 11px;margin-bottom:9px;cursor:pointer;transition:.12s}
+.pl-card:hover{border-color:var(--border-subtle);background:var(--bg-card-hover)}
+.pl-card.dragging{opacity:.4}
+.pl-card .nm{font-weight:600;font-size:13px;margin-bottom:4px;line-height:1.25}
+.pl-card .meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:10.5px;color:var(--text-muted)}
+.pl-card .prem{color:#86efac;font-weight:600}
+.pl-move{display:flex;gap:6px;margin-top:8px}
+.pl-move button{flex:1;background:var(--bg-input);border:1px solid var(--border-color);color:var(--text-secondary);border-radius:7px;padding:4px 0;font-size:11px;cursor:pointer}
+.pl-move button:hover{background:var(--bg-card-hover);color:var(--text-primary)}
+.pl-move button:disabled{opacity:.3;cursor:default}
+/* intake wizard */
+.ix-wrap{max-width:900px}
+.ix-steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ix-step{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);padding:6px 10px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border-color)}
+.ix-step .n{width:18px;height:18px;border-radius:50%;background:#ffffff14;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.ix-step.done{color:#4ade80;border-color:#22c55e44}.ix-step.done .n{background:#22c55e;color:#04120a}
+.ix-step.cur{color:var(--text-primary);border-color:var(--purple);box-shadow:0 0 0 1px var(--purple) inset}.ix-step.cur .n{background:var(--purple);color:#fff}
+.ix-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:22px;margin-bottom:14px}
+.ix-card h3{margin:0 0 3px;font-size:17px}
+.ix-card .lead{color:var(--text-secondary);font-size:12.5px;margin:0 0 16px}
+.ix-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(max-width:620px){.ix-grid{grid-template-columns:1fr}.pl-board{grid-template-columns:repeat(5,minmax(160px,1fr))}}
+.ix-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ix-chip{background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;padding:10px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:7px;user-select:none}
+.ix-chip:hover{background:var(--bg-card-hover)}
+.ix-chip.on{background:linear-gradient(135deg,#6d5ef022,#06b6d422);border-color:var(--purple);color:#fff;box-shadow:0 0 0 1px var(--purple) inset}
+.ix-chip .ck{opacity:0}.ix-chip.on .ck{opacity:1;color:#4ade80}
+.ix-out{background:#0b1120;border:1px solid var(--border-color);border-radius:12px;padding:15px 17px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;white-space:pre-wrap;color:#cbd5e1;max-height:340px;overflow:auto}
+.ix-reco{background:#3b82f612;border:1px solid #3b82f633;border-radius:9px;padding:9px 12px;font-size:12.5px;color:#93c5fd;margin-bottom:12px}
+.ix-nav{display:flex;gap:10px;align-items:center;margin-top:4px}
+.ix-review{display:grid;grid-template-columns:170px 1fr;gap:5px 14px;font-size:12.5px}
+.ix-review .k{color:var(--text-muted)}
+.ix-sec{grid-column:1/-1;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);font-weight:700;border-top:1px solid var(--border-color);padding-top:10px;margin-top:8px}
+</style>
+
+<!-- ================= PIPELINE ================= -->
+<div class="view" id="view-pipeline">
+  <div class="page-head">
+    <div>
+      <div class="page-title" style="background:linear-gradient(90deg,#c4b5fd,#7dd3fc,#4ade80);-webkit-background-clip:text;background-clip:text">Deal Pipeline</div>
+      <div class="page-sub">Every account from first contact to renewal — move a card as the deal moves. Saves to the shared book.</div>
+    </div>
+    <div class="filters">
+      <input class="filter-input" id="plSearch" placeholder="Search deals..." oninput="renderPipeline()">
+      <select class="filter-select" id="plAgent" onchange="renderPipeline()"><option value="">All agents</option><option>James Bekhor</option><option>Michael Bank</option><option value="__none">Unassigned</option></select>
+      <button class="act-btn primary" onclick="ixStart()">✚ New intake</button>
+    </div>
+  </div>
+  <div class="kpi-row" id="plKpis"></div>
+  <div class="pl-board" id="plBoard"></div>
+  <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:14px" id="plFoot"></div>
+</div>
+
+<!-- ================= SMART INTAKE ================= -->
+<div class="view" id="view-intake">
+  <div class="page-head">
+    <div>
+      <div class="page-title">Smart Intake</div>
+      <div class="page-sub">Lead → quote-ready in a couple of minutes. The form adapts to the risk; the application and submission build themselves.</div>
+    </div>
+  </div>
+  <div class="life" id="ixLife" style="margin-bottom:14px"></div>
+  <div class="ix-wrap">
+    <div class="ix-steps" id="ixSteps"></div>
+    <div id="ixStage"></div>
+    <div class="ix-nav" id="ixNav"></div>
+  </div>
+</div>
+<datalist id="ixBookList"></datalist>
 
 <!-- ================= CLIENT MODAL ================= -->
 <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
@@ -1147,7 +1233,7 @@ function qAddToBook(){
 
 /* ---------- init ---------- */
 let _appInited=false;
-function rerenderAll(){ renderPriority(); renderDashboard(); renderClients(); renderTasks(); if (typeof renderLeads==='function') renderLeads(); }
+function rerenderAll(){ renderPriority(); renderDashboard(); renderClients(); renderTasks(); if (typeof renderLeads==='function') renderLeads(); if (typeof renderPipeline==='function'){ plDecorate(); renderPipeline(); } }
 function initApp(){
   if(_appInited){ rerenderAll(); return; }
   _appInited=true;
@@ -1232,6 +1318,7 @@ async function enterApp(){
   $('authWrap').style.display='none';
   await loadLeads();
   decorate(); initApp(); renderLeads(); qqInit();
+  if(typeof plDecorate==='function'){ plDecorate(); renderPipeline(); ixInit(); }
 }
 
 async function saveClient(c){
@@ -1379,7 +1466,7 @@ function renderLeads(){
      <td>${esc(d.state||'—')}</td>
      <td style="font-weight:600">${d.purchase_amount!=null?'$'+d.purchase_amount:'—'}</td>
      <td><select class="filter-select" style="padding:4px 8px;font-size:11px" onchange="setLeadStatus('${esc(key)}',this.value)">${['new','called','quoted','won','dead'].map(s=>`<option ${((LEAD_STATUS[key]||'new')===s)?'selected':''}>${s}</option>`).join('')}</select></td>
-     <td><button class="act-btn" style="color:#c4b5fd" onclick="qqFromLeadKey('${esc(key)}')">⚡ Quote</button></td></tr>`; }).join('')||'<tr><td colspan="9"><div class="empty-note">No leads match</div></td></tr>')+'</tbody>';
+     <td><button class="act-btn" style="color:#4ade80" onclick="ixStartFromLeadKey('${esc(key)}')">▶ Intake</button> <button class="act-btn" style="color:#c4b5fd" onclick="qqFromLeadKey('${esc(key)}')">⚡ Quote</button></td></tr>`; }).join('')||'<tr><td colspan="9"><div class="empty-note">No leads match</div></td></tr>')+'</tbody>';
   $('ldFoot').textContent = `● ${rows.length} shown of ${LEADS.length} unique leads · syncs automatically from BoldPenguin daily reports`;
 }
 async function setLeadStatus(key, v){
@@ -1455,6 +1542,455 @@ function qqBuild(){
   go('quote');
   window.scrollTo(0,0);
 }
+
+/* ================= LIFECYCLE + PIPELINE + SMART INTAKE (interconnected) ================= */
+/* Relies on CRM globals: $, esc, fmt$, fdate, CLIENTS, sb, AGENTS, avColor, initials, openModal, go, saveClient, decorate, LEADS, leadKey */
+
+const LIFE = [
+  {k:'intake',  label:'Intake',   icon:'📥'},
+  {k:'quote',   label:'Quote',    icon:'📤'},
+  {k:'signup',  label:'Sign-up',  icon:'✍️'},
+  {k:'service', label:'Service',  icon:'🛡️'},
+  {k:'renewal', label:'Renewal',  icon:'🔄'}
+];
+const LIFE_ORDER = LIFE.map(l=>l.k);
+const LIFE_BY = Object.fromEntries(LIFE.map(l=>[l.k,l]));
+const ixNum = v => { const n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,'')); return isNaN(n)?null:n; };
+const ixMoney = n => n==null||isNaN(n)?'—':'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const ixMoney2 = n => '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function deriveLife(c){
+  if(c.lifeStage) return c.lifeStage;
+  if(c._bucket==='quoted') return 'quote';
+  if(c._bucket==='lapsed') return 'lost';
+  if(c._hasActive && c._d!=null && c._d<=90) return 'renewal';
+  if(c._hasActive) return 'service';
+  if(c._bucket==='review') return 'service';
+  return 'intake';
+}
+function plDecorate(){ (CLIENTS||[]).forEach(c=>{ c._life = c.lifeStage || deriveLife(c); }); }
+
+async function setLife(id, stage){
+  const c=CLIENTS[id]; if(!c) return;
+  c.lifeStage=stage; c._life=stage;
+  renderPipeline();
+  try{ await saveClient(c); }catch(e){}
+}
+function plMove(id,dir){
+  const c=CLIENTS[id]; if(!c) return;
+  const i=LIFE_ORDER.indexOf(c._life);
+  const ni=Math.max(0,Math.min(LIFE_ORDER.length-1,i+dir));
+  if(ni!==i) setLife(id, LIFE_ORDER[ni]);
+}
+/* drag & drop */
+function plDrag(e,id){ e.dataTransfer.setData('text/plain',String(id)); e.dataTransfer.effectAllowed='move'; e.currentTarget.classList.add('dragging'); }
+function plOver(e){ e.preventDefault(); e.currentTarget.classList.add('drop'); }
+function plLeave(e){ e.currentTarget.classList.remove('drop'); }
+function plDrop(e,stage){ e.preventDefault(); e.currentTarget.classList.remove('drop'); const id=parseInt(e.dataTransfer.getData('text/plain'),10); if(!isNaN(id)) setLife(id,stage); }
+
+function plCard(c){
+  const prem=c._hasActive?c._activePrem:c._totPrem;
+  const i=LIFE_ORDER.indexOf(c._life);
+  const ren=(c._d!=null&&c._d<=120)?`<span class="pill p-due" style="font-size:9px">${c._d}d</span>`:'';
+  const lines=(c._lines||[]).slice(0,3).map(l=>`<span class="pill line" style="font-size:9px">${esc(l)}</span>`).join('');
+  return `<div class="pl-card" draggable="true" ondragstart="plDrag(event,${c._id})" ondragend="this.classList.remove('dragging')" onclick="openModal(${c._id})">
+    <div class="nm">${esc(c.businessName||c.folderName||'—')}</div>
+    <div class="meta">${lines} ${prem?`<span class="prem">${fmt$(prem)}</span>`:''} ${ren}</div>
+    <div class="meta" style="margin-top:4px">${c.assignedTo?esc(c.assignedTo):'<span style="opacity:.55">Unassigned</span>'}</div>
+    <div class="pl-move">
+      <button title="Move back" onclick="event.stopPropagation();plMove(${c._id},-1)" ${i<=0?'disabled':''}>◀</button>
+      <button title="Move forward" onclick="event.stopPropagation();plMove(${c._id},1)" ${i>=LIFE_ORDER.length-1?'disabled':''}>▶</button>
+    </div></div>`;
+}
+function renderPipeline(){
+  if(!$('plBoard')) return;
+  plDecorate();
+  const q=($('plSearch')?$('plSearch').value:'').toLowerCase();
+  const ag=$('plAgent')?$('plAgent').value:'';
+  const cols={}; LIFE_ORDER.forEach(k=>cols[k]=[]);
+  let lost=0;
+  (CLIENTS||[]).forEach(c=>{
+    if(c._life==='lost'){ lost++; return; }
+    if(q && !((c.businessName||'')+' '+(c.operations||'')+' '+(c.folderName||'')+' '+(c._carriers||[]).join(' ')).toLowerCase().includes(q)) return;
+    if(ag==='__none' && c.assignedTo) return;
+    if(ag && ag!=='__none' && c.assignedTo!==ag) return;
+    (cols[c._life]||cols.intake).push(c);
+  });
+  // sort each column: renewal by soonest, others by premium desc
+  LIFE_ORDER.forEach(k=>{
+    if(k==='renewal') cols[k].sort((a,b)=>(a._d??9e9)-(b._d??9e9));
+    else cols[k].sort((a,b)=>((b._hasActive?b._activePrem:b._totPrem)||0)-((a._hasActive?a._activePrem:a._totPrem)||0));
+  });
+  const openVal=[...cols.intake,...cols.quote,...cols.signup].reduce((s,c)=>s+((c._hasActive?c._activePrem:c._totPrem)||0),0);
+  const kpis=[
+    {ic:'💰',n:fmt$(openVal),t:'Open pipeline value'},
+    ...LIFE.map(l=>({ic:l.icon,n:cols[l.k].length,t:l.label}))
+  ];
+  $('plKpis').innerHTML=kpis.map(k=>`<div class="kpi"><span class="ic">${k.ic}</span><h4>${k.n}</h4><p>${k.t}</p></div>`).join('');
+  $('plBoard').innerHTML=LIFE.map(l=>{
+    const rows=cols[l.k];
+    return `<div class="pl-col" ondragover="plOver(event)" ondragleave="plLeave(event)" ondrop="plDrop(event,'${l.k}')">
+      <div class="pl-colhead">${l.icon} ${l.label}<span class="cnt">${rows.length}</span></div>
+      ${rows.map(plCard).join('')||'<div class="empty-note" style="font-size:11px;padding:14px 4px">Drop a deal here</div>'}
+    </div>`;
+  }).join('');
+  const total=LIFE_ORDER.reduce((s,k)=>s+cols[k].length,0);
+  $('plFoot').textContent=`${total} active deals on the board · ${lost} in win-back (lapsed) · drag a card or use ◀ ▶ to move a deal — it saves to the shared book`;
+}
+
+/* ================= SMART INTAKE (IX namespace) ================= */
+const IX_CLASSES = {
+  contractor:   {icon:'🔨', label:'Construction / Contractors', lines:['GL','WC','Excess','CommercialAuto'], tags:['contractor']},
+  habitational: {icon:'🏢', label:'Habitational / Apartments / Real Estate', lines:['GL','Property','Excess'], tags:['property']},
+  restaurant:   {icon:'🍽️', label:'Restaurant / Bar / Hospitality', lines:['GL','Property','LiquorLiability','WC'], tags:['property','liquor']},
+  trucking:     {icon:'🚚', label:'Trucking / Transportation', lines:['CommercialAuto','Cargo','GL'], tags:['auto']},
+  autoservice:  {icon:'🔧', label:'Auto Service / Dealer', lines:['GL','Property','CommercialAuto'], tags:['property','auto']},
+  retail:       {icon:'🛍️', label:'Retail / Wholesale', lines:['GL','Property'], tags:['property']},
+  manufacturing:{icon:'🏭', label:'Manufacturing', lines:['GL','Property','Excess','CommercialAuto'], tags:['property']},
+  professional: {icon:'💼', label:'Professional Services', lines:['GL','Professional','Cyber'], tags:['professional']},
+  fitness:      {icon:'🏋️', label:'Gym / Fitness / Studio', lines:['GL','Professional','Property'], tags:['property','professional']},
+  cannabis:     {icon:'🌿', label:'Cannabis / CBD / Hemp', lines:['GL','Property','Excess'], tags:['property']},
+  vacant:       {icon:'🏚️', label:'Vacant Building / Land', lines:['GL','Property'], tags:['property']},
+  other:        {icon:'📋', label:'Other / General', lines:['GL'], tags:[]}
+};
+const IX_LINES = {
+  GL:{label:'General Liability',short:'GL'}, WC:{label:'Workers’ Comp',short:'WC'}, Excess:{label:'Excess / Umbrella',short:'Excess'},
+  Property:{label:'Commercial Property',short:'Property'}, CommercialAuto:{label:'Commercial Auto',short:'Commercial Auto'},
+  Cargo:{label:'Motor Truck Cargo',short:'Cargo'}, InlandMarine:{label:'Inland Marine / Equipment',short:'Inland Marine'},
+  Professional:{label:'Professional Liability (E&O)',short:'Professional'}, LiquorLiability:{label:'Liquor Liability',short:'Liquor'},
+  Cyber:{label:'Cyber Liability',short:'Cyber'}
+};
+const IX_STATES = ['FL','TX','CA','PA','GA','NC','SC','AZ','TN','NY','NJ','Other'];
+const IX_Q = [
+  {id:'yearsInBiz', label:'Years in business', type:'num', hint:'0 = startup'},
+  {id:'owners', label:'# of owners / officers', type:'num'},
+  {id:'revenue', label:'Annual gross revenue', type:'money'},
+  {id:'employees', label:'# of employees (excl. owners)', type:'num'},
+  {id:'fein', label:'FEIN (for the application)', type:'text', hint:'Optional now — needed to bind'},
+  {id:'mailing', label:'Mailing address', type:'text'},
+  {id:'subCosts', label:'Annual subcontractor costs', type:'money', needLine:'GL', when:a=>a.classKey==='contractor'},
+  {id:'pctSubbed', label:'% of work subcontracted out', type:'num', needLine:'GL', when:a=>a.classKey==='contractor'},
+  {id:'trade', label:'Primary trade', type:'select', needTag:'contractor', options:['General contractor','Roofing','Framing/Carpentry','Concrete/Masonry','Electrical','Plumbing/HVAC','Excavation/Grading','Painting','Handyman','Remodeling','Other']},
+  {id:'workMix', label:'Work mix', type:'select', needTag:'contractor', options:['Mostly new construction','Mostly remodel/service','Even split']},
+  {id:'residentialPct', label:'% residential work', type:'num', needTag:'contractor', hint:'Residential new-build is harder to place'},
+  {id:'heightWork', label:'Any work above 3 stories?', type:'yn', needTag:'contractor'},
+  {id:'payroll', label:'Annual payroll (all staff)', type:'money', needLine:'WC'},
+  {id:'statesOp', label:'States of operation', type:'text', needLine:'WC', hint:'e.g. FL, GA'},
+  {id:'ownersExcluded', label:'Owners excluded from WC?', type:'yn', needLine:'WC'},
+  {id:'expMod', label:'Experience mod (if any)', type:'text', needLine:'WC', hint:'Blank if none / new'},
+  {id:'buildingValue', label:'Building value (replacement)', type:'money', needLine:'Property'},
+  {id:'bppValue', label:'Business personal property value', type:'money', needLine:'Property'},
+  {id:'construction', label:'Construction type', type:'select', needLine:'Property', options:['Frame','Joisted Masonry','Non-Combustible','Masonry Non-Combustible','Fire Resistive']},
+  {id:'yearBuilt', label:'Year built', type:'num', needLine:'Property'},
+  {id:'roofYear', label:'Year roof last replaced', type:'num', needLine:'Property', hint:'Old roofs drive FL declinations'},
+  {id:'sprinklered', label:'Sprinklered?', type:'yn', needLine:'Property'},
+  {id:'coastal', label:'Coastal / wind-exposed county?', type:'yn', needLine:'Property'},
+  {id:'powerUnits', label:'# power units', type:'num', needLine:'CommercialAuto'},
+  {id:'radius', label:'Radius of operation', type:'select', needLine:'CommercialAuto', options:['Local (≤50 mi)','Intermediate (51–200 mi)','Long-haul (200+ mi)']},
+  {id:'drivers', label:'# drivers', type:'num', needLine:'CommercialAuto'},
+  {id:'youngestDriver', label:'Youngest driver age', type:'num', needLine:'CommercialAuto'},
+  {id:'mvrClean', label:'All MVRs reviewed & acceptable?', type:'yn', needLine:'CommercialAuto'},
+  {id:'commodities', label:'Commodities hauled', type:'text', needLine:'Cargo'},
+  {id:'maxLoad', label:'Max load value', type:'money', needLine:'Cargo'},
+  {id:'liquorPct', label:'% of sales from alcohol', type:'num', needLine:'LiquorLiability'},
+  {id:'entertainment', label:'Live entertainment / late hours?', type:'yn', needLine:'LiquorLiability'},
+  {id:'profession', label:'Profession / specialty', type:'text', needLine:'Professional'},
+  {id:'licensedPros', label:'# licensed professionals', type:'num', needLine:'Professional'},
+  {id:'lossesAny', label:'Any losses in the last 5 years?', type:'yn', section:1},
+  {id:'lossCount', label:'# of losses', type:'num', when:a=>a.lossesAny==='Yes'},
+  {id:'lossTotal', label:'Total incurred (paid + reserves)', type:'money', when:a=>a.lossesAny==='Yes'},
+  {id:'lossDesc', label:'Largest loss — what happened?', type:'textarea', when:a=>a.lossesAny==='Yes'},
+  {id:'lapse', label:'Any lapse in coverage?', type:'yn', section:1},
+  {id:'priorCarrier', label:'Prior / expiring carrier', type:'text', section:1},
+  {id:'expiringDate', label:'Target effective date', type:'text', section:1, hint:'When do they need coverage?'}
+];
+const IX_STEPS = ['Client','Operations','Coverage','Details','Loss & Risk','Review','Quote-ready'];
+
+let IX = {}, ixSel = [], ixStep = 0, ixLifeStage='intake', ixCurOut='application';
+
+function ixInit(){
+  const dl=$('ixBookList'); if(dl && !dl.childElementCount){
+    (CLIENTS||[]).forEach(c=>{ const n=c.businessName||c.folderName; if(n){ const o=document.createElement('option'); o.value=n; dl.appendChild(o);} });
+  }
+  ixRender();
+}
+function ixRenderLife(){
+  const idx=LIFE_ORDER.indexOf(ixLifeStage);
+  $('ixLife').innerHTML=LIFE.map((l,i)=>`<div class="lifeseg ${i<idx?'done':(i===idx?'on':'')}"><span class="dot">${l.icon}</span><span class="lbl">${l.label}</span></div>${i<LIFE.length-1?'<span class="lifearrow"></span>':''}`).join('');
+}
+function ixRenderSteps(){
+  $('ixSteps').innerHTML=IX_STEPS.map((t,i)=>`<div class="ix-step ${i<ixStep?'done':''} ${i===ixStep?'cur':''}"><span class="n">${i<ixStep?'✓':i+1}</span>${t}</div>`).join('');
+}
+function ixInput(q){
+  const v=IX[q.id]==null?'':IX[q.id];
+  if(q.type==='yn') return `<div class="ix-chips">${['Yes','No'].map(o=>`<div class="ix-chip ${v===o?'on':''}" onclick="ixSetYN('${q.id}','${o}')">${o}</div>`).join('')}</div>`;
+  if(q.type==='select') return `<select class="filter-select" style="width:100%" onchange="ixSet('${q.id}',this.value)"><option value="">— select —</option>${q.options.map(o=>`<option ${v===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  if(q.type==='textarea') return `<textarea class="q-in" style="width:100%;min-height:64px" oninput="ixSet('${q.id}',this.value)">${esc(v)}</textarea>`;
+  return `<input class="q-in" style="width:100%" value="${esc(v)}" placeholder="${q.type==='money'?'$':''}" oninput="ixSet('${q.id}',this.value)">`;
+}
+function ixSet(id,val){ IX[id]=val; }
+function ixSetYN(id,val){ IX[id]=val; ixRender(); }
+function ixField(q){ return `<div class="fld"><label>${esc(q.label)}</label>${ixInput(q)}${q.hint?`<div class="hint" style="font-size:11px;color:var(--text-muted);margin-top:4px">${esc(q.hint)}</div>`:''}</div>`; }
+function ixActiveQ(){
+  const cls=IX_CLASSES[IX.classKey]||{tags:[]};
+  return IX_Q.filter(q=>{
+    if(q.needLine && !ixSel.includes(q.needLine)) return false;
+    if(q.needTag && !(cls.tags||[]).includes(q.needTag)) return false;
+    if(q.when && !q.when(IX)) return false;
+    return true;
+  });
+}
+function ixLineList(){ return ixSel.map(l=>IX_LINES[l].label).join(', ')||'—'; }
+
+function ixRender(){
+  if(!$('ixStage')) return;
+  if(ixStep<6){ ixLifeStage='intake'; } else if(ixLifeStage==='intake'){ ixLifeStage='quote'; }
+  ixRenderLife(); ixRenderSteps();
+  const s=$('ixStage');
+  if(ixStep===0){
+    s.innerHTML=`<div class="ix-card"><h3>Who is this for?</h3>
+      <p class="lead">Start typing — existing clients autocomplete from your book, so you never re-key a repeat.</p>
+      <div class="ix-grid">
+        <div class="fld"><label>Business name</label><input class="q-in" list="ixBookList" value="${esc(IX.name||'')}" oninput="ixOnName(this.value);ixNav()" placeholder="Business name, LLC"></div>
+        <div class="fld"><label>State</label><select class="filter-select" style="width:100%" onchange="ixSet('state',this.value);ixNav()"><option value="">— select —</option>${IX_STATES.map(st=>`<option ${IX.state===st?'selected':''}>${st}</option>`).join('')}</select></div>
+        <div class="fld"><label>Contact name</label><input class="q-in" value="${esc(IX.contact||'')}" oninput="ixSet('contact',this.value)" placeholder="Optional"></div>
+        <div class="fld"><label>Phone</label><input class="q-in" value="${esc(IX.phone||'')}" oninput="ixSet('phone',this.value)" placeholder="Optional"></div>
+        <div class="fld"><label>Email</label><input class="q-in" value="${esc(IX.email||'')}" oninput="ixSet('email',this.value)" placeholder="Optional"></div>
+        <div class="fld"><label>Lead source</label><select class="filter-select" style="width:100%" onchange="ixSet('source',this.value)">${['BoldPenguin','Referral','Renewal','Website','Cold call','Other'].map(o=>`<option ${IX.source===o?'selected':''}>${o}</option>`).join('')}</select></div>
+      </div></div>`;
+  } else if(ixStep===1){
+    s.innerHTML=`<div class="ix-card"><h3>What do they do?</h3>
+      <p class="lead">Pick the closest class — it decides the recommended coverages and which questions to ask. No wall of fields.</p>
+      <div class="ix-chips">${Object.entries(IX_CLASSES).map(([k,c])=>`<div class="ix-chip ${IX.classKey===k?'on':''}" onclick="ixPickClass('${k}')"><span>${c.icon}</span>${c.label}</div>`).join('')}</div>
+      <div class="fld" style="margin-top:16px"><label>Describe the operations in your words</label><textarea class="q-in" style="width:100%;min-height:64px" oninput="ixSet('operations',this.value)" placeholder="e.g. Commercial roofing — tear-off and re-roof, no residential new construction">${esc(IX.operations||'')}</textarea></div></div>`;
+  } else if(ixStep===2){
+    const cls=IX_CLASSES[IX.classKey]||{lines:[],label:''};
+    s.innerHTML=`<div class="ix-card"><h3>Coverage lines</h3>
+      <p class="lead">Pre-selected for this class. Tap to add or remove — the next screen asks only what these lines need.</p>
+      ${IX.classKey?`<div class="ix-reco">💡 For <b>${cls.label}</b>, most placements include: ${cls.lines.map(l=>IX_LINES[l].label).join(', ')}.</div>`:''}
+      <div class="ix-chips">${Object.entries(IX_LINES).map(([k,l])=>`<div class="ix-chip ${ixSel.includes(k)?'on':''}" onclick="ixToggle('${k}')"><span class="ck">✓</span>${l.label}</div>`).join('')}</div></div>`;
+  } else if(ixStep===3){
+    const qs=ixActiveQ().filter(q=>!q.section);
+    s.innerHTML=`<div class="ix-card"><h3>Risk details</h3>
+      <p class="lead">Only what matters for ${IX.classKey?IX_CLASSES[IX.classKey].label:'this risk'} and the lines you chose — this is what makes it quote-ready.</p>
+      <div class="ix-grid">${qs.map(ixField).join('')}</div></div>`;
+  } else if(ixStep===4){
+    const secQ=IX_Q.filter(q=>q.section);
+    const all=[];
+    secQ.forEach(q=>{ all.push(q); if(q.id==='lossesAny') IX_Q.filter(e=>e.id.indexOf('loss')===0&&e.when&&e.when(IX)).forEach(e=>all.push(e)); });
+    s.innerHTML=`<div class="ix-card"><h3>Loss history &amp; timing</h3>
+      <p class="lead">Underwriters ask this first. Honest answers get faster, firmer quotes.</p>
+      <div class="ix-grid">${all.map(ixField).join('')}</div></div>`;
+  } else if(ixStep===5){
+    s.innerHTML=`<div class="ix-card"><h3>Review before we package it</h3>
+      <p class="lead">This is everything we'll put on the application and submission. Jump back to fix anything.</p>
+      <div class="ix-review">${ixReviewRows()}</div></div>`;
+  } else if(ixStep===6){
+    s.innerHTML=ixOutputCard(); ixShowOut('application');
+  }
+  ixNav();
+}
+function ixOnName(v){ ixSet('name',v);
+  const hit=(CLIENTS||[]).find(c=>((c.businessName||c.folderName||'').toLowerCase())===v.toLowerCase());
+  if(hit){ if(hit.state&&!IX.state)IX.state=hit.state; if(hit.operations&&!IX.operations)IX.operations=hit.operations; if(hit.phone&&!IX.phone)IX.phone=hit.phone; }
+}
+function ixPickClass(k){ IX.classKey=k; if(IX._autoLines!==k){ ixSel=[...IX_CLASSES[k].lines]; IX._autoLines=k; } ixRender(); }
+function ixToggle(k){ ixSel=ixSel.includes(k)?ixSel.filter(x=>x!==k):[...ixSel,k]; ixRender(); }
+
+function ixLabeled(ids){ return ids.map(id=>{ const q=IX_Q.find(x=>x.id===id); if(!q)return null; const v=IX[id]; if(v==null||v==='')return null; return `  • ${q.label}: ${v}`; }).filter(Boolean).join('\n'); }
+function ixApplication(){
+  const cls=IX_CLASSES[IX.classKey]||{label:'—'};
+  const ids=ixActiveQ().map(q=>q.id).filter(id=>['yearsInBiz','owners','employees','revenue'].indexOf(id)===-1);
+  return `ACORD-STYLE COMMERCIAL APPLICATION (DRAFT) — ZENIX INSURANCE
+================================================================
+APPLICANT
+  Named insured:   ${IX.name||'—'}
+  Mailing address: ${IX.mailing||'—'}
+  Contact:         ${IX.contact||'—'}  ${IX.phone||''}  ${IX.email||''}
+  FEIN:            ${IX.fein||'(to collect at bind)'}
+  State:           ${IX.state||'—'}
+  Years in biz:    ${IX.yearsInBiz||'—'}   Owners: ${IX.owners||'—'}   Employees: ${IX.employees||'—'}
+  Annual revenue:  ${IX.revenue?ixMoney(ixNum(IX.revenue)):'—'}
+
+NATURE OF BUSINESS
+  Class:       ${cls.label}
+  Operations:  ${IX.operations||'—'}
+
+COVERAGES REQUESTED
+  ${ixSel.map(l=>'• '+IX_LINES[l].label).join('\n  ')||'—'}
+
+RISK-SPECIFIC DETAIL
+${ixLabeled(ids)||'  • (none entered)'}
+
+LOSS HISTORY
+  • Losses last 5 yrs: ${IX.lossesAny||'—'}${IX.lossCount?('  ('+IX.lossCount+' / '+(IX.lossTotal?ixMoney(ixNum(IX.lossTotal)):'—')+')'):''}
+  ${IX.lossDesc?('• Largest: '+IX.lossDesc):''}
+  • Coverage lapse: ${IX.lapse||'—'}
+  • Prior/expiring carrier: ${IX.priorCarrier||'—'}   Target eff: ${IX.expiringDate||'—'}
+
+Prepared by Zenix Insurance. Draft application — signature required before binding.`;
+}
+function ixSubmission(){
+  const cls=IX_CLASSES[IX.classKey]||{label:'—'};
+  const ids=ixActiveQ().map(q=>q.id).filter(id=>['revenue','payroll','yearsInBiz'].indexOf(id)===-1);
+  return `SUBMISSION TO MARKET — ZENIX INSURANCE
+======================================
+Insured:     ${IX.name||'—'}  |  ${IX.state||'—'}  |  Target eff: ${IX.expiringDate||'open'}
+Class:       ${cls.label}
+Operations:  ${IX.operations||'—'}
+Coverage:    ${ixLineList()}
+Revenue:     ${IX.revenue?ixMoney(ixNum(IX.revenue)):'—'}   Payroll: ${IX.payroll?ixMoney(ixNum(IX.payroll)):'—'}   Yrs: ${IX.yearsInBiz||'—'}
+
+DETAIL
+${ixLabeled(ids)||'  • (see application)'}
+
+LOSSES: ${IX.lossesAny==='Yes'?((IX.lossCount||'?')+' loss(es), '+(IX.lossTotal?ixMoney(ixNum(IX.lossTotal)):'amount TBD')+(IX.lossDesc?(' — '+IX.lossDesc):'')):'None in 5 years'}
+Prior carrier: ${IX.priorCarrier||'—'}
+
+Please advise appetite + indication. Contact: ${IX.contact||'Zenix'} ${IX.phone||''}`;
+}
+function ixProposalModel(){
+  const premium=ixNum(IX.carrierQuote);
+  const fee=ixNum(IX.brokerFee)!=null?ixNum(IX.brokerFee):500;
+  const total=(premium||0)+fee;
+  const down=total*0.35, monthly=(total-down)*1.06/9;
+  return {premium,fee,total,down,monthly};
+}
+const IX_DISC={
+ FL:'Surplus lines placement — not protected by the Florida Insurance Guaranty Act. Broker fee is fully earned at inception.',
+ TX:'Placed with an eligible surplus lines insurer not protected by the Texas guaranty fund. Broker fee fully earned at inception.',
+ PA:'Not protected by the Pennsylvania Property & Casualty Insurance Guaranty Association. Broker fee fully earned at inception.',
+ CA:'Placed with a non-admitted insurer, not protected by CIGA. Broker fee is agency compensation, fully earned at inception.',
+ _default:'Surplus lines placement — not protected by the state guaranty fund. Broker fee fully earned at inception.'
+};
+function ixProposal(){
+  const m=ixProposalModel();
+  const disc=IX_DISC[IX.state]||IX_DISC._default;
+  return `ZENIX INSURANCE — CLIENT PROPOSAL
+=================================
+Prepared for:  ${IX.name||'—'}
+Date:          ${IX.expiringDate||new Date().toISOString().slice(0,10)}
+Operations:    ${IX.operations||'—'}
+
+COVERAGE
+  ${ixSel.map(l=>'• '+IX_LINES[l].label).join('\n  ')||'—'}
+
+YOUR INVESTMENT
+  Premium (from carrier, incl. taxes & fees).... ${m.premium!=null?ixMoney2(m.premium):'(enter carrier quote)'}
+  Zenix broker fee.............................. ${ixMoney2(m.fee)}
+  --------------------------------------------------
+  TOTAL......................................... ${m.premium!=null?ixMoney2(m.total):'—'}
+  ${m.premium!=null?('Payment: '+ixMoney2(m.down)+' down + 9 monthly payments of ~'+ixMoney2(m.monthly)):''}
+
+DISCLOSURE
+${disc}`;
+}
+function ixReviewRows(){
+  const cls=IX_CLASSES[IX.classKey]||{label:'—'};
+  const base=[['Business',IX.name],['State',IX.state],['Contact',[IX.contact,IX.phone,IX.email].filter(Boolean).join(' · ')],['Lead source',IX.source],['Class',cls.label],['Operations',IX.operations],['Coverage',ixLineList()]];
+  let html=base.map(r=>`<div class="k">${r[0]}</div><div class="v">${esc(r[1]||'—')}</div>`).join('');
+  html+=`<div class="ix-sec">Risk details</div>`;
+  ixActiveQ().forEach(q=>{ if(IX[q.id]!=null&&IX[q.id]!=='') html+=`<div class="k">${esc(q.label)}</div><div class="v">${esc(IX[q.id])}</div>`; });
+  ['lossesAny','lossCount','lossTotal','lossDesc','lapse','priorCarrier','expiringDate'].forEach(id=>{const q=IX_Q.find(x=>x.id===id); if(IX[id]!=null&&IX[id]!=='') html+=`<div class="k">${esc(q.label)}</div><div class="v">${esc(IX[id])}</div>`;});
+  return html;
+}
+function ixOutputCard(){
+  return `<div class="ix-card"><h3>Quote-ready 🎯</h3>
+    <p class="lead">Send the submission to your MGA; when the quote comes back, drop the number into the proposal.</p>
+    <div class="tabs" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="filter-select" style="cursor:pointer" id="ixtab-application" onclick="ixShowOut('application')">📝 Application</div>
+      <div class="filter-select" style="cursor:pointer" id="ixtab-submission" onclick="ixShowOut('submission')">📤 MGA submission</div>
+      <div class="filter-select" style="cursor:pointer" id="ixtab-proposal" onclick="ixShowOut('proposal')">📄 Client proposal</div>
+    </div>
+    <div id="ixOutArea"></div>
+    <div class="ix-nav" style="margin-top:14px">
+      <button class="act-btn primary" onclick="ixSaveDeal()">＋ Save to pipeline</button>
+      <button class="act-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+      <button class="act-btn" onclick="ixReset()">↺ New intake</button>
+      <span id="ixSaveMsg" style="font-size:12px;color:var(--text-muted)"></span>
+    </div></div>`;
+}
+function ixShowOut(w){
+  ixCurOut=w;
+  ['application','submission','proposal'].forEach(t=>{const el=$('ixtab-'+t); if(el) el.style.background=(t===w)?'var(--purple)':'';el&&(el.style.color=(t===w)?'#fff':'');});
+  const a=$('ixOutArea'); if(!a) return;
+  if(w==='proposal'){
+    a.innerHTML=`<div style="background:#0b1120;border:1px solid var(--border-color);border-radius:12px;padding:14px 16px;margin-bottom:12px">
+       <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">Got the quote back from the MGA? Enter it — taxes &amp; fees are already in the carrier's number.</div>
+       <div class="ix-grid">
+         <div class="fld"><label>Carrier quoted premium (incl. taxes/fees)</label><input class="q-in" value="${esc(IX.carrierQuote||'')}" placeholder="$" oninput="ixSet('carrierQuote',this.value);ixShowOut('proposal')"></div>
+         <div class="fld"><label>Your broker fee</label><input class="q-in" value="${IX.brokerFee!=null?esc(IX.brokerFee):'500'}" placeholder="$" oninput="ixSet('brokerFee',this.value);ixShowOut('proposal')"></div>
+       </div></div>
+       <div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="act-btn" onclick="ixCopy()">⧉ Copy proposal</button></div>
+       <div class="ix-out">${esc(ixProposal())}</div>`;
+  } else {
+    a.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="act-btn" onclick="ixCopy()">⧉ Copy this</button></div><div class="ix-out">${esc(w==='application'?ixApplication():ixSubmission())}</div>`;
+  }
+}
+function ixCopy(){ const t=ixCurOut==='application'?ixApplication():(ixCurOut==='submission'?ixSubmission():ixProposal());
+  navigator.clipboard.writeText(t).then(()=>{ const m=$('ixSaveMsg'); if(m){m.textContent='✓ Copied.'; setTimeout(()=>m.textContent='',1600);} }); }
+
+async function ixSaveDeal(){
+  if(!IX.name){ alert('Enter a business name first'); return; }
+  const m=ixProposalModel();
+  const rec={folderId:null,folderName:IX.name,driveUrl:null,businessName:IX.name,dba:null,
+    contactName:IX.contact||null,phone:IX.phone||null,email:IX.email||null,address:IX.mailing||null,city:null,state:IX.state||null,
+    operations:IX.operations||(IX_CLASSES[IX.classKey]||{}).label||'new intake',assignedTo:null,
+    lifeStage:'quote', stage:'quoted', source:'intake',
+    intake:{classKey:IX.classKey,lines:[...ixSel],answers:{...IX}},
+    policies:ixSel.map(k=>({line:IX_LINES[k].short,carrier:null,wholesaler:null,policyNumber:null,premium:(ixNum(IX.carrierQuote)||null),effectiveDate:null,expirationDate:null,status:'quoted',sourceDoc:'smart intake'})),
+    fileCount:0,lastDocDate:new Date().toISOString().slice(0,10),notes:'Created via Smart Intake'};
+  const msg=$('ixSaveMsg'); if(msg) msg.textContent='Saving…';
+  const clean={}; Object.keys(rec).forEach(k=>{ if(k[0]!=='_') clean[k]=rec[k]; });
+  try{
+    const {data,error}=await sb.from('clients').insert({data:clean}).select('id').single();
+    if(error){ if(msg){msg.style.color='#fca5a5';msg.textContent='Could not save: '+error.message;} return; }
+    rec._rowId=data.id; CLIENTS.push(rec);
+    decorate(); plDecorate(); rerenderAll();
+    go('pipeline'); renderPipeline();
+  }catch(e){ if(msg){msg.style.color='#fca5a5';msg.textContent='Could not save: '+e.message;} }
+}
+function ixReset(){ IX={}; ixSel=[]; ixStep=0; ixLifeStage='intake'; ixRender(); window.scrollTo(0,0); }
+function ixStart(){ ixReset(); go('intake'); ixInit(); }
+function ixStartFromLeadKey(key){
+  const l=(LEADS||[]).find(x=>leadKey(x.data)===key); if(!l){ ixStart(); return; }
+  const d=l.data;
+  IX={}; ixSel=[]; ixStep=1; ixLifeStage='intake';
+  IX.name=d.legal_entity||''; IX.state=d.state||''; IX.phone=d.phone_number||''; IX.source='BoldPenguin';
+  IX.operations=String(d.business_class||'').replace(/^[0-9]+\s*-\s*/,'');
+  IX.classKey=ixGuessClass(d.business_class,IX.operations);
+  if(IX.classKey){ ixSel=[...IX_CLASSES[IX.classKey].lines]; IX._autoLines=IX.classKey; }
+  go('intake'); ixInit();
+}
+function ixGuessClass(bc,ops){
+  const s=((bc||'')+' '+(ops||'')).toLowerCase();
+  if(/contract|roof|construct|plumb|electric|hvac|carpen|concrete|excavat|remodel|handyman|paint/.test(s)) return 'contractor';
+  if(/restaurant|bar|cafe|grill|food|hospitality|catering/.test(s)) return 'restaurant';
+  if(/truck|transport|haul|logistics|freight|carrier/.test(s)) return 'trucking';
+  if(/apartment|habitational|real estate|rental|landlord|property mgmt|lessor/.test(s)) return 'habitational';
+  if(/auto|dealer|mechanic|repair shop|body shop/.test(s)) return 'autoservice';
+  if(/manufactur|fabricat|assembl/.test(s)) return 'manufacturing';
+  if(/consult|account|attorney|law|architect|engineer|profession/.test(s)) return 'professional';
+  if(/gym|fitness|studio|yoga|trainer/.test(s)) return 'fitness';
+  if(/cannabis|cbd|hemp|dispensary/.test(s)) return 'cannabis';
+  if(/retail|store|shop|wholesale|boutique/.test(s)) return 'retail';
+  return 'other';
+}
+function ixCanAdvance(){
+  if(ixStep===0) return !!(IX.name&&IX.state);
+  if(ixStep===1) return !!IX.classKey;
+  if(ixStep===2) return ixSel.length>0;
+  return true;
+}
+function ixNav(){
+  const back = ixStep>0 ? `<button class="act-btn" onclick="ixPrev()">← Back</button>`:'<span></span>';
+  let next='';
+  if(ixStep<6){ const label=ixStep===5?'Generate application & submission →':'Continue →';
+    next=`<button class="act-btn primary" onclick="ixNext()" ${ixCanAdvance()?'':'disabled'}>${label}</button>`; }
+  $('ixNav').innerHTML=`${back}<div style="flex:1"></div>${next}`;
+}
+function ixNext(){ if(ixCanAdvance()&&ixStep<6){ixStep++; ixRender(); window.scrollTo({top:0,behavior:'smooth'});} }
+function ixPrev(){ if(ixStep>0){ixStep--; ixRender(); window.scrollTo({top:0,behavior:'smooth'});} }
 
 </script>
 </body>
