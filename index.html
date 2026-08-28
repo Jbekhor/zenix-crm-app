@@ -3119,11 +3119,17 @@ async function apFillPdf(code, values) {
       }
     }
   }
-  // strip the empty form so nothing renders twice
+  // Strip the empty form so nothing renders twice, then copy the pages into a
+  // fresh document. Deleting the AcroForm leaves ~550 orphaned field objects in
+  // the graph that pdf-lib still serialises - copying drops them, which takes a
+  // 15 second save down to a few milliseconds.
   pages.forEach(p => p.node.set(PDFName.of('Annots'), doc.context.obj([])));
   try { doc.catalog.delete(PDFName.of('AcroForm')); } catch (e) { }
+  const flat = await PDFDocument.create();
+  const copied = await flat.copyPages(doc, doc.getPageIndices());
+  copied.forEach(p => flat.addPage(p));
   if (missing.length) console.warn('ACORD ' + code + ': unmapped field names', missing);
-  return await doc.save({ updateFieldAppearances: false });
+  return await flat.save({ updateFieldAppearances: false });
 }
 function apIsMultiline(fl) {
   try { return !!(fl.acroField.getFlags && (fl.acroField.getFlags() & 4096)); } catch (e) { return false; }
