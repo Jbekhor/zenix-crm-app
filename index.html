@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZENIX CRM — Sales, Service & Renewals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg-base:#0a0e1a; --bg-surface:#0f1629; --bg-card:#111827; --bg-card-hover:#1a2235;
@@ -17,29 +18,42 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg-base);color:var(--text-primary);font-family:Roboto,'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;min-height:100vh}
+body{background:var(--bg-base);color:var(--text-primary);font-family:Inter,'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;min-height:100vh}
 a{color:var(--cyan);text-decoration:none}
 button{font-family:inherit;cursor:pointer}
 
 /* ============ NAV ============ */
 .topnav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--bg-nav);border-bottom:1px solid var(--border-subtle)}
 .logo{display:flex;align-items:center;gap:10px;margin-right:18px}
-.logo-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;box-shadow:0 0 18px var(--glow-primary)}
+.logo-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;box-shadow:none}
 .logo-name{font-weight:800;font-size:17px;letter-spacing:2px}
 .nav-btn{display:flex;align-items:center;gap:7px;background:transparent;border:none;color:var(--text-secondary);font-size:13.5px;font-weight:500;padding:8px 14px;border-radius:9px;transition:all .15s}
 .nav-btn:hover{color:var(--text-primary);background:#ffffff0a}
-.nav-btn.active{background:#58638d;color:#fff}
+.nav-btn.active{background:#ffffff14;color:#fff;box-shadow:inset 0 -2px 0 var(--purple)}
 .nav-spacer{flex:1}
 .nav-search{background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:9px;color:var(--text-primary);padding:8px 14px;font-size:13px;width:230px;outline:none}
 .nav-search:focus{border-color:var(--purple)}
 .nav-user{display:flex;align-items:center;gap:8px;margin-left:14px;font-weight:600;font-size:13.5px}
 .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6d5ef0,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex:none}
 
+.nav-group{display:flex;flex-direction:column;align-items:flex-start;padding:0 12px;border-left:1px solid var(--border-subtle);gap:1px}
+.nav-cap{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);padding-left:14px;line-height:1}
+.nav-tabs{display:flex;gap:2px}
+.nav-tabs .nav-btn{padding:5px 14px;font-size:13px}
+.topnav{padding-top:8px;padding-bottom:8px}
+.nav-new{position:relative;margin-right:10px}
+.nav-menu{display:none;position:absolute;right:0;top:calc(100% + 8px);background:#0f1629;border:1px solid var(--border-color);border-radius:12px;min-width:250px;box-shadow:0 14px 40px #000a;z-index:60;overflow:hidden;padding:5px}
+.nav-menu.open{display:block}
+.nav-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:10px 13px;border-radius:9px;color:var(--text-primary)}
+.nav-menu button:hover{background:#ffffff0d}
+.nav-menu button b{display:block;font-size:13px;font-weight:600}
+.nav-menu button span{display:block;font-size:11px;color:var(--text-muted);margin-top:1px}
+
 /* ============ LAYOUT ============ */
 .view{display:none;padding:22px 24px 60px;max-width:1500px;margin:0 auto}
 .view.active{display:block}
-.page-head{padding:18px 22px;border-radius:14px;margin-bottom:18px;background:radial-gradient(1200px 300px at 20% 0%,#8b5cf61e,transparent),var(--bg-surface);border:1px solid var(--border-subtle);display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
-.page-title{font-size:26px;font-weight:800;font-style:italic;background:linear-gradient(90deg,#34d399,#22d3ee 45%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.page-head{padding:16px 20px;border-radius:14px;margin-bottom:18px;background:var(--bg-surface);border:1px solid var(--border-subtle);display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.page-title{font-size:21px;font-weight:700;letter-spacing:-.2px;color:var(--text-primary)}
 .page-sub{color:var(--text-secondary);font-size:13px;margin-top:3px}
 .filters{display:flex;gap:8px;flex-wrap:wrap}
 .filter-select,.filter-input{background:#0b1122;border:1px solid var(--border-color);color:var(--text-secondary);border-radius:9px;padding:8px 12px;font-size:12.5px;outline:none}
@@ -66,7 +80,7 @@ button{font-family:inherit;cursor:pointer}
 /* ============ STAGE SECTIONS ============ */
 .stage{background:var(--bg-surface);border:1px solid var(--border-color);border-left:3px solid var(--stage-c,#3b82f6);border-radius:14px;margin-bottom:16px;overflow:hidden}
 .stage-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;user-select:none}
-.stage-dot{width:9px;height:9px;border-radius:50%;background:var(--stage-c);box-shadow:0 0 8px var(--stage-c)}
+.stage-dot{width:8px;height:8px;border-radius:50%;background:var(--stage-c)}
 .stage-title{font-weight:700;font-size:14.5px}
 .stage-count{background:#ffffff10;border:1px solid var(--border-subtle);color:var(--text-secondary);border-radius:16px;font-size:11px;font-weight:700;padding:2px 9px}
 .stage-sub{font-size:11.5px;color:var(--text-muted);margin-left:2px}
@@ -103,6 +117,27 @@ tbody tr:hover{background:#151d33}
 .act-btn.primary{background:#8b5cf6;border-color:#8b5cf6;color:#fff}
 .act-btn.primary:hover{background:#7c3aed}
 .empty-note{padding:26px;text-align:center;color:var(--text-muted);font-size:12.5px}
+.pr-chip{display:inline-block;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap;border:1px solid transparent}
+.pr-hot{background:#ef44441f;color:#fca5a5;border-color:#ef444455}
+.pr-call{background:#f59e0b1c;color:#fcd34d;border-color:#f59e0b4d}
+.pr-follow{background:#3b82f61c;color:#93c5fd;border-color:#3b82f64d}
+.pr-recent{background:#64748b22;color:#a8b3c7;border-color:#64748b40}
+.pr-wait{background:#8b5cf61c;color:#c4b5fd;border-color:#8b5cf64d}
+.pr-cold{background:#64748b22;color:#94a3b8;border-color:#64748b40}
+.pr-book{background:#06b6d41c;color:#67e8f9;border-color:#06b6d44d}
+.pr-done{background:#22c55e1c;color:#86efac;border-color:#22c55e4d}
+.pr-off{background:#ffffff08;color:var(--text-muted);border-color:var(--border-subtle)}
+.try-wrap{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.try-dot{width:8px;height:8px;border-radius:50%;background:#334155;display:inline-block}
+.try-dot.on{background:#7dd3fc}
+.try-none{font-size:11px;color:var(--text-muted)}
+.try-last{font-size:10.5px;color:var(--text-muted);margin-left:5px}
+.try-more{font-size:10.5px;color:#7dd3fc;font-weight:700}
+.log-btns{display:flex;gap:5px}
+.log-btn{background:#ffffff08;border:1px solid var(--border-subtle);color:var(--text-secondary);font-size:11px;font-weight:600;border-radius:7px;padding:4px 9px;transition:all .12s}
+.log-btn:hover{color:#fff;background:#ffffff14}
+.log-btn.ok{color:#86efac;border-color:#22c55e55}
+.log-btn.ok:hover{background:#22c55e22}
 
 /* ============ DASHBOARD ============ */
 .dash-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
@@ -232,12 +267,31 @@ textarea.q-in{resize:vertical;line-height:1.5}
 <body>
 <nav class="topnav">
   <div class="logo"><div class="logo-mark">⚡</div><div class="logo-name">ZENIX</div></div>
-  <button class="nav-btn" data-view="dashboard" onclick="go('dashboard')">▦ Dashboard</button>
-  <button class="nav-btn active" data-view="priority" onclick="go('priority')">◉ Priority View</button><button class="nav-btn" data-view="pipeline" onclick="go('pipeline')" style="color:#7dd3fc">◫ Pipeline</button>
-  <button class="nav-btn" data-view="clients" onclick="go('clients')">▤ Clients</button>
-  <button class="nav-btn" data-view="leads" onclick="go('leads')" style="color:#7dd3fc">◎ Leads</button><button class="nav-btn" data-view="tasks" onclick="go('tasks')">☑ Tasks</button>
-  <button class="nav-btn" data-view="intake" onclick="ixStart()" style="color:#4ade80">➕ Smart Intake</button><button class="nav-btn" data-view="qq" onclick="go('qq')" style="color:#c4b5fd">⚡ Quick Quote</button><button class="nav-btn" data-view="markets" onclick="go('markets');renderMarkets()" style="color:#4ade80">◆ Markets</button><button class="nav-btn" data-view="atrisk" onclick="go('atrisk');renderAtRisk()" style="color:#fca5a5">⚠ At-Risk</button><button class="nav-btn" data-view="quote" onclick="go('quote')">✚ Full Quote</button>
+  <button class="nav-btn" data-view="dashboard" onclick="go('dashboard')">Dashboard</button>
+  <div class="nav-group"><span class="nav-cap">Sales</span><div class="nav-tabs">
+    <button class="nav-btn" data-view="leads" onclick="go('leads')">Leads</button>
+    <button class="nav-btn" data-view="pipeline" onclick="go('pipeline')">Pipeline</button>
+    <button class="nav-btn" data-view="markets" onclick="go('markets');renderMarkets()">Markets</button>
+  </div></div>
+  <div class="nav-group"><span class="nav-cap">Client service</span><div class="nav-tabs">
+    <button class="nav-btn" data-view="clients" onclick="go('clients')">Clients</button>
+    <button class="nav-btn" data-view="tasks" onclick="go('tasks')">Tasks</button>
+  </div></div>
+  <div class="nav-group"><span class="nav-cap">Accounting</span><div class="nav-tabs">
+    <button class="nav-btn" data-view="accounting" onclick="go('accounting');renderAccounting()">Billing &amp; Fees</button>
+  </div></div>
+  <div class="nav-group"><span class="nav-cap">Renewals</span><div class="nav-tabs">
+    <button class="nav-btn active" data-view="priority" onclick="go('priority')">Renewals</button>
+  </div></div>
   <div class="nav-spacer"></div>
+  <div class="nav-new" id="navNew">
+    <button class="act-btn primary" style="padding:8px 16px;font-size:13px;font-weight:600" onclick="navNewToggle(event)">＋ New ▾</button>
+    <div class="nav-menu" id="navNewMenu">
+      <button onclick="navNewGo('intake')"><b>Smart Intake</b><span>Guided wizard — new prospect to quote-ready</span></button>
+      <button onclick="navNewGo('qq')"><b>Quick Quote</b><span>Fast indication for a lead or client</span></button>
+      <button onclick="navNewGo('quote')"><b>Full Quote / Proposal</b><span>Print-ready proposal builder</span></button>
+    </div>
+  </div>
   <input class="nav-search" id="globalSearch" placeholder="Search clients..." oninput="globalSearch(this.value)">
   <div class="nav-user"><div class="avatar" id="navAvatar">?</div><span id="navUser">—</span><a href="#" onclick="doSignOut(event)" style="margin-left:10px;font-size:11px;color:var(--text-muted)">Sign out</a></div>
 </nav>
@@ -246,8 +300,8 @@ textarea.q-in{resize:vertical;line-height:1.5}
 <div class="view active" id="view-priority">
   <div class="page-head">
     <div>
-      <div class="page-title">Priority View for Renewals</div>
-      <div class="page-sub">Your live book from the Clients folder in Google Drive — prioritized by what needs attention now</div>
+      <div class="page-title">Renewal Management</div>
+      <div class="page-sub">Your live book, prioritized by expiration — what needs attention now to keep accounts on the books</div>
     </div>
     <div class="filters">
       <input class="filter-input" id="pvSearch" placeholder="Search deals..." oninput="renderPriority()">
@@ -307,7 +361,7 @@ textarea.q-in{resize:vertical;line-height:1.5}
 <div class="view" id="view-tasks">
   <div class="page-head">
     <div>
-      <div class="page-title" style="background:linear-gradient(90deg,#a78bfa,#ec4899);-webkit-background-clip:text;background-clip:text">Tasks</div>
+      <div class="page-title">Tasks</div>
       <div class="page-sub">Operational follow-ups generated from the book — renewals, cancellations, and data gaps</div>
     </div>
   </div>
@@ -395,20 +449,50 @@ textarea.q-in{resize:vertical;line-height:1.5}
 <div class="view" id="view-leads">
   <div class="page-head">
     <div>
-      <div class="page-title" style="background:linear-gradient(90deg,#7dd3fc,#22c55e);-webkit-background-clip:text;background-clip:text">BoldPenguin Leads</div>
-      <div class="page-sub">Every lead purchased from the exchange — synced automatically from the daily reports. Click a phone number to call.</div>
+      <div class="page-title">Leads</div>
+      <div class="page-sub">Your BoldPenguin work queue — hottest first. Log every call attempt right from the row.</div>
     </div>
     <div class="filters">
       <input class="filter-input" id="ldSearch" placeholder="Search name or phone..." oninput="renderLeads()">
       <select class="filter-select" id="ldMonth" onchange="renderLeads()"><option value="">All Months</option></select>
       <select class="filter-select" id="ldState" onchange="renderLeads()"><option value="">All States</option></select>
       <select class="filter-select" id="ldStatus" onchange="renderLeads()"><option value="">All Statuses</option><option>new</option><option>called</option><option>quoted</option><option>won</option><option>dead</option></select>
+      <select class="filter-select" id="ldSort" onchange="renderLeads()"><option value="priority">Sort: Priority</option><option value="newest">Sort: Newest</option><option value="cost">Sort: Cost</option></select>
     </div>
   </div>
   <div class="kpi-row" id="ldKpis"></div>
   <div class="stage" style="--stage-c:#7dd3fc">
     <div class="stage-body"><div style="overflow-x:auto"><table id="leadsTable"></table></div></div>
     <div class="stage-foot" id="ldFoot"></div>
+  </div>
+</div>
+
+<!-- ================= ACCOUNTING ================= -->
+<div class="view" id="view-accounting">
+  <div class="page-head">
+    <div>
+      <div class="page-title">Accounting — Billing &amp; Fees</div>
+      <div class="page-sub">IPFS financing health and the broker-fee audit across the active book</div>
+    </div>
+    <div class="filters">
+      <input class="filter-input" id="acSearch" placeholder="Search clients..." oninput="renderAccounting()">
+      <select class="filter-select" id="acFee" onchange="renderAccounting()"><option value="">Fee audit: everything</option><option value="missing">Missing fee docs</option><option value="ok">Fee documented</option></select>
+    </div>
+  </div>
+  <div class="kpi-row" id="acKpis"></div>
+  <div class="stage" style="--stage-c:#ef4444">
+    <div class="stage-head" onclick="this.parentElement.classList.toggle('collapsed')">
+      <div class="stage-dot"></div><div class="stage-title">IPFS financing — needs attention</div>
+      <span class="stage-count" id="acIpfsCount">0</span><span class="stage-sub">cancellation warnings first, then cancelled with balances</span><div class="sp"></div>
+    </div>
+    <div class="stage-body"><div style="overflow-x:auto"><table id="acIpfsTable"></table></div></div>
+  </div>
+  <div class="stage" style="--stage-c:#f59e0b">
+    <div class="stage-head" onclick="this.parentElement.classList.toggle('collapsed')">
+      <div class="stage-dot"></div><div class="stage-title">Broker fee audit</div>
+      <span class="stage-count" id="acFeeCount">0</span><span class="stage-sub">every active account should have a documented fee, signed proposal and disclosure</span><div class="sp"></div>
+    </div>
+    <div class="stage-body"><div style="overflow-x:auto"><table id="acFeeTable"></table></div></div>
   </div>
 </div>
 
@@ -478,7 +562,8 @@ textarea.q-in{resize:vertical;line-height:1.5}
 /* intake wizard */
 .ix-wrap{max-width:900px}
 .ix-steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.ix-step{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);padding:6px 10px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border-color)}
+.ix-step{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);padding:6px 10px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border-color);cursor:pointer;user-select:none}
+.ix-step:hover{color:var(--text-primary);border-color:var(--purple)}
 .ix-step .n{width:18px;height:18px;border-radius:50%;background:#ffffff14;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
 .ix-step.done{color:#4ade80;border-color:#22c55e44}.ix-step.done .n{background:#22c55e;color:#04120a}
 .ix-step.cur{color:var(--text-primary);border-color:var(--purple);box-shadow:0 0 0 1px var(--purple) inset}.ix-step.cur .n{background:var(--purple);color:#fff}
@@ -563,25 +648,6 @@ textarea.q-in{resize:vertical;line-height:1.5}
   <div class="stage" style="--stage-c:#4ade80">
     <div class="stage-body"><div style="overflow-x:auto"><table id="marketsTable"></table></div></div>
     <div class="stage-foot" id="mkFoot"></div>
-  </div>
-</div>
-
-<!-- ================= AT-RISK (premium finance) ================= -->
-<div class="view" id="view-atrisk">
-  <div class="page-head">
-    <div>
-      <div class="page-title" style="background:linear-gradient(90deg,#fca5a5,#f59e0b);-webkit-background-clip:text;background-clip:text">At-Risk — Premium Finance</div>
-      <div class="page-sub">Financed policies heading toward cancellation for non-payment. Call these before they lapse. From IPFS.</div>
-    </div>
-    <div class="filters">
-      <input class="filter-input" id="arSearch" placeholder="Search insured..." oninput="renderAtRisk()">
-      <select class="filter-select" id="arStatus" onchange="renderAtRisk()"><option value="risk">At-risk only</option><option value="">All financed</option><option>DELINQUENT</option><option>GRACE</option><option>CANCELLED</option><option>CURRENT</option></select>
-    </div>
-  </div>
-  <div class="kpi-row" id="arKpis"></div>
-  <div class="stage" style="--stage-c:#f59e0b">
-    <div class="stage-body"><div style="overflow-x:auto"><table id="atriskTable"></table></div></div>
-    <div class="stage-foot" id="arFoot"></div>
   </div>
 </div>
 
@@ -699,11 +765,15 @@ const B_BY_KEY=Object.fromEntries(BUCKETS.map(b=>[b.key,b]));
 /* ---------- nav ---------- */
 function go(v){
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(e=>e.classList.toggle('active',e.dataset.view===v));
+  const owner={intake:null,qq:null,quote:null}[v]===undefined?v:null;
+  document.querySelectorAll('.nav-btn').forEach(e=>e.classList.toggle('active',!!owner&&e.dataset.view===owner));
   $('view-'+v).classList.add('active');
   window.scrollTo({top:0});
 }
 function globalSearch(q){ go('clients'); $('clSearch').value=q; renderClients(); }
+function navNewToggle(ev){ ev.stopPropagation(); $('navNewMenu').classList.toggle('open'); }
+function navNewGo(v){ $('navNewMenu').classList.remove('open'); if(v==='intake'){ ixStart(); } else { go(v); if(v==='qq') qqInit(); } }
+document.addEventListener('click', e=>{ const m=$('navNewMenu'); if(m && m.classList.contains('open') && !e.target.closest('#navNew')) m.classList.remove('open'); });
 
 /* ---------- shared row ---------- */
 function clientRow(c, showExp=true){
@@ -881,7 +951,7 @@ function renderDashboard(){
      <div class="stat-line"><span>Policy events from email</span><b>238</b></div>
      <div class="stat-line"><span>Email-only clients (need folders)</span><b>${CLIENTS.filter(c=>c.source==='email').length}</b></div>
      <div class="stat-line"><span>2026 payment receipts</span><b>${(SIDECAR.receiptsSummary||{}).receipts2026||'—'}</b></div>
-     <div style="font-size:10.5px;color:var(--text-muted);margin-top:8px">${esc(SIDECAR.verifiedAt||'')}</div></div>${(typeof commissionCardHtml==='function')?commissionCardHtml():''}`;
+     <div style="font-size:10.5px;color:var(--text-muted);margin-top:8px">${esc(SIDECAR.verifiedAt||'')}</div></div>`;
 }
 
 /* ---------- clients view ---------- */
@@ -1285,7 +1355,48 @@ function qAddToBook(){
 
 /* ---------- init ---------- */
 let _appInited=false;
-function rerenderAll(){ renderPriority(); renderDashboard(); renderClients(); renderTasks(); if (typeof renderLeads==='function') renderLeads(); if (typeof renderPipeline==='function'){ plDecorate(); renderPipeline(); } }
+function rerenderAll(){ renderPriority(); renderDashboard(); renderClients(); renderTasks(); if (typeof renderLeads==='function') renderLeads(); if (typeof renderPipeline==='function'){ plDecorate(); renderPipeline(); } if (typeof renderAccounting==='function') renderAccounting(); }
+function renderAccounting(){
+  if(!$('acIpfsTable')) return;
+  const q=($('acSearch').value||'').toLowerCase(), feeF=$('acFee').value;
+  const match=c=>!q || (c.businessName||'').toLowerCase().includes(q);
+  const act = (CLIENTS||[]).filter(c=>c._hasActive);
+  const inforce = act.reduce((s,c)=>s+(c._activePrem||0),0);
+  const feeClients = act.filter(c=>c.feeCheck);
+  const feeOk = feeClients.filter(c=>typeof c.feeCheck.brokerFee==='number'&&c.feeCheck.brokerFee>0);
+  const feeSum = feeOk.reduce((s,c)=>s+c.feeCheck.brokerFee,0);
+  const feeMissing = act.filter(c=>!(c.feeCheck&&typeof c.feeCheck.brokerFee==='number'&&c.feeCheck.brokerFee>0));
+  const fin = (CLIENTS||[]).filter(c=>c.financeStatus);
+  const finRank=c=>/intent to cancel|cancellation warning|warning/i.test(c.financeStatus)&&!/^cancelled/i.test(c.financeStatus)?0:(/cancelled/i.test(c.financeStatus)?1:2);
+  const finRisk = fin.filter(c=>finRank(c)===0).length;
+  $('acKpis').innerHTML=[
+    ['⛔','IPFS cancellation risk',finRisk,finRisk?'k-red':''],
+    ['🏦','On IPFS watchlist',fin.length,''],
+    ['＄','Premium in force',fmt$(inforce),''],
+    ['🧾','Broker fees documented',fmt$(feeSum)+' ('+feeOk.length+')','k-green'],
+    ['⚠','Active w/o fee docs',feeMissing.length,feeMissing.length?'k-amber':''],
+  ].map(k=>`<div class="kpi ${k[3]}"><span class="ic">${k[0]}</span><h4>${k[2]}</h4><p>${k[1]}</p></div>`).join('');
+  const finRows = fin.filter(match).sort((a,b)=>finRank(a)-finRank(b)||(b._activePrem||0)-(a._activePrem||0));
+  $('acIpfsCount').textContent=finRows.length;
+  $('acIpfsTable').innerHTML='<thead><tr><th>Business</th><th>Financing status</th><th>Premium</th><th>Contact</th></tr></thead><tbody>'+
+    (finRows.map(c=>{const r=finRank(c);const cls=r===0?'pr-hot':(r===1?'pr-off':'pr-wait');
+      return `<tr onclick="openModal(${c._id})"><td style="font-weight:600;min-width:170px">${esc(c.businessName)}</td>
+      <td style="max-width:520px"><span class="pr-chip ${cls}" style="margin-right:8px">${r===0?'At risk':(r===1?'Cancelled':'Watch')}</span><span style="font-size:12px;color:var(--text-secondary)">${esc(c.financeStatus)}</span></td>
+      <td class="prem">${c._activePrem?fmt$(c._activePrem):'—'}</td>
+      <td>${c.phone?`<span class="phone">✆ ${esc(c.phone)}</span>`:'—'}</td></tr>`;}).join('')||'<tr><td colspan="4"><div class="empty-note">Nothing on the IPFS watchlist</div></td></tr>')+'</tbody>';
+  let feeRows = act.filter(match);
+  if(feeF==='missing') feeRows=feeRows.filter(c=>feeMissing.includes(c));
+  if(feeF==='ok') feeRows=feeRows.filter(c=>feeOk.includes(c));
+  feeRows.sort((a,b)=>(feeMissing.includes(b)?1:0)-(feeMissing.includes(a)?1:0)||(b._activePrem||0)-(a._activePrem||0));
+  $('acFeeCount').textContent=feeRows.length;
+  $('acFeeTable').innerHTML='<thead><tr><th>Business</th><th>Broker fee</th><th>Retail / wholesale</th><th>Proposal · disclosure</th><th>Premium</th></tr></thead><tbody>'+
+    (feeRows.slice(0,400).map(c=>{const f=c.feeCheck||{};const ok=feeOk.includes(c);
+      return `<tr onclick="openModal(${c._id})"><td style="font-weight:600;min-width:170px">${esc(c.businessName)}</td>
+      <td>${ok?`<span style="color:#86efac;font-weight:700">${fmt$(f.brokerFee)}</span>${f.confidence?` <span style="font-size:10px;color:var(--text-muted)">${esc(f.confidence)}</span>`:''}`:'<span class="pr-chip pr-call">Not documented</span>'}</td>
+      <td style="font-size:12px;color:var(--text-secondary)">${f.retailTotal?fmt$(f.retailTotal):'—'} / ${f.wholesaleTotal?fmt$(f.wholesaleTotal):'—'}</td>
+      <td style="font-size:12px">${f.signedProposal?'<span style="color:#86efac">✓ proposal</span>':'<span style="color:#fca5a5">✗ proposal</span>'} · ${f.disclosureOnFile?'<span style="color:#86efac">✓ disclosure</span>':'<span style="color:#fca5a5">✗ disclosure</span>'}</td>
+      <td class="prem">${c._activePrem?fmt$(c._activePrem):'—'}</td></tr>`;}).join('')||'<tr><td colspan="5"><div class="empty-note">No matching accounts</div></td></tr>')+'</tbody>';
+}
 function initApp(){
   if(_appInited){ rerenderAll(); return; }
   _appInited=true;
@@ -1436,14 +1547,39 @@ async function qAddToBook(){
 /* ================= Leads tab ================= */
 let LEADS = [];
 let LEAD_STATUS = {};
+let LEAD_ACT = {};          // lead_key -> [{ts, kind}] newest first
+let LD_ACT_REMOTE = true;   // falls back to localStorage if the table is missing
 let REFUND_PHONES = new Set();
+const LD_KINDS = { no_answer:['No answer','☎'], voicemail:['Left voicemail','🎙'], connected:['Connected','✓'], bad_number:['Bad number','✕'], note:['Note','✎'] };
+function agoTxt(iso){ if(!iso) return ''; const m=(Date.now()-new Date(iso).getTime())/60000;
+  if(m<1) return 'just now'; if(m<60) return Math.round(m)+'m ago'; if(m<1440) return Math.round(m/60)+'h ago'; return Math.round(m/1440)+'d ago'; }
+function ldActLocalSave(){ try{ localStorage.setItem('zenix_lead_activity', JSON.stringify(LEAD_ACT)); }catch(e){} }
+async function logAttempt(key, kind){
+  const rec = { ts: new Date().toISOString(), kind };
+  (LEAD_ACT[key] = LEAD_ACT[key] || []).unshift(rec);
+  ldActLocalSave();
+  if((LEAD_STATUS[key]||'new')==='new' && kind!=='note') LEAD_STATUS[key]='called';
+  if(kind==='bad_number') LEAD_STATUS[key]='dead';
+  renderLeads();
+  if(typeof ldRefreshCard==='function') ldRefreshCard(key);
+  try{
+    if(LD_ACT_REMOTE){
+      let email=''; try{ email=(await sb.auth.getUser()).data.user.email||''; }catch(e){}
+      await sb.from('lead_activity').insert({ lead_key:key, kind, user_email:email });
+    }
+    await sb.from('lead_status').upsert({ lead_key:key, status:LEAD_STATUS[key]||'called' });
+  }catch(e){}
+}
 function leadKey(d){ return (d.phone_number||'') + '|' + (d.sent_timestamp_edt||''); }
 async function loadLeads(){
   try{
-    const [lu, st] = await Promise.all([
+    const [lu, st, act] = await Promise.all([
       sb.from('leads_unique').select('id,data'),
-      sb.from('lead_status').select('lead_key,status')
+      sb.from('lead_status').select('lead_key,status'),
+      sb.from('lead_activity').select('lead_key,ts,kind').order('ts',{ascending:false}).limit(8000)
     ]);
+    if(act.error){ LD_ACT_REMOTE=false; try{ LEAD_ACT=JSON.parse(localStorage.getItem('zenix_lead_activity')||'{}'); }catch(e){ LEAD_ACT={}; } }
+    else { LEAD_ACT={}; (act.data||[]).forEach(r=>{ (LEAD_ACT[r.lead_key]=LEAD_ACT[r.lead_key]||[]).push({ts:r.ts,kind:r.kind}); }); }
     const rows = lu.data || [];
     LEADS = rows.filter(x=>x.data && x.data._type==='lead');
     REFUND_PHONES = new Set(rows.filter(x=>x.data && x.data._type==='refund').map(x=>x.data.phone_number||''));
@@ -1473,6 +1609,24 @@ function leadMatch(d){
   return {converted:true, bound:!!bound, client:c};
 }
 let _ldFiltersDone = false;
+function ldPriority(l){
+  const d=l.data, key=leadKey(d), st=LEAD_STATUS[key]||'new';
+  const mm=leadMatch(d), refd=REFUND_PHONES.has(d.phone_number||'');
+  const acts=LEAD_ACT[key]||[]; const last=acts[0]; const tries=acts.filter(a=>a.kind!=='note').length;
+  const ageH=(Date.now()-new Date(d.sent_timestamp_edt||d._report_date||0).getTime())/36e5;
+  if(mm.bound)                return {p:7,label:'✓ Bound',cls:'pr-done'};
+  if(st==='won')              return {p:7,label:'✓ Won',cls:'pr-done'};
+  if(refd)                    return {p:8,label:'Refunded',cls:'pr-off'};
+  if(st==='dead')             return {p:9,label:'Dead',cls:'pr-off'};
+  if(mm.converted)            return {p:6,label:'In book',cls:'pr-book'};
+  if(st==='quoted')           return {p:5,label:'Awaiting decision',cls:'pr-wait'};
+  if(st==='new' && ageH<=24)  return {p:0,label:'Hot — call now',cls:'pr-hot'};
+  if(st==='new')              return {p:1,label:'Call today',cls:'pr-call'};
+  const lastH = last? (Date.now()-new Date(last.ts).getTime())/36e5 : 999;
+  if(tries>=4)                return {p:4,label:'Long shot · '+tries+' tries',cls:'pr-cold'};
+  if(lastH>=4)                return {p:2,label:'Follow up',cls:'pr-follow'};
+  return {p:3,label:'Tried '+agoTxt(last&&last.ts),cls:'pr-recent'};
+}
 function renderLeads(){
   if(!$('leadsTable')) return;
   _CLIENT_IDX = null; // rebuild against latest book
@@ -1481,44 +1635,55 @@ function renderLeads(){
     [...new Set(LEADS.map(l=>String(l.data.sent_timestamp_edt||'').slice(0,7)).filter(Boolean))].sort().reverse()
       .forEach(m=>$('ldMonth').insertAdjacentHTML('beforeend',`<option>${m}</option>`));
     [...new Set(LEADS.map(l=>l.data.state).filter(Boolean))].sort()
-      .forEach(s=>$('ldState').insertAdjacentHTML('beforeend',`<option>${s}</option>`));
+      .forEach(st=>$('ldState').insertAdjacentHTML('beforeend',`<option>${st}</option>`));
   }
   const q=($('ldSearch').value||'').toLowerCase(), mo=$('ldMonth').value, st=$('ldState').value, stat=$('ldStatus').value;
-  const rows = LEADS.filter(l=>{ const d=l.data;
+  const sort=($('ldSort')&&$('ldSort').value)||'priority';
+  let rows = LEADS.filter(l=>{ const d=l.data;
     if(q && !(((d.legal_entity||'')+' '+(d.phone_number||'')).toLowerCase().includes(q))) return false;
     if(mo && String(d.sent_timestamp_edt||'').slice(0,7)!==mo) return false;
     if(st && d.state!==st) return false;
-    if(stat && (LEAD_STATUS[leadKey(d)]||'new')!==stat) return false;
+    if(stat && (LEAD_STATUS[leadKey(l.data)]||'new')!==stat) return false;
     return true; });
+  const pr = new Map(rows.map(l=>[l,ldPriority(l)]));
+  if(sort==='priority') rows.sort((a,b)=> pr.get(a).p-pr.get(b).p || String(b.data.sent_timestamp_edt||'').localeCompare(String(a.data.sent_timestamp_edt||'')));
+  else if(sort==='cost') rows.sort((a,b)=> (Number(b.data.purchase_amount)||0)-(Number(a.data.purchase_amount)||0));
+  else rows.sort((a,b)=> String(b.data.sent_timestamp_edt||'').localeCompare(String(a.data.sent_timestamp_edt||'')));
   const nowMo = new Date().toISOString().slice(0,7);
   const inMo = l=>String(l.data.sent_timestamp_edt||'').slice(0,7)===nowMo;
-  const sum = a=>a.reduce((s,l)=>s+(Number(l.data.purchase_amount)||0),0);
-  const matches = LEADS.map(l=>leadMatch(l.data));
-  const bound = matches.filter(m=>m.bound).length;
+  const sum = a=>a.reduce((x,l)=>x+(Number(l.data.purchase_amount)||0),0);
+  const allPr = LEADS.map(l=>ldPriority(l));
+  const workNow = allPr.filter(x=>x.p<=2).length;
+  const bound = LEADS.filter(l=>leadMatch(l.data).bound).length;
   const totalSpend = sum(LEADS);
   const convRate = LEADS.length? Math.round(bound/LEADS.length*100):0;
-  const cpb = bound? fmt$(totalSpend/bound):'—';
   $('ldKpis').innerHTML = [
-    ['◎','Leads this month', LEADS.filter(inMo).length],
-    ['＄','Spend this month', fmt$(sum(LEADS.filter(inMo)))],
-    ['∑','All-time leads', LEADS.length],
-    ['⌀','Avg cost per lead', LEADS.length?fmt$(totalSpend/LEADS.length):'—'],
-    ['✅','Bound from leads', bound+' ('+convRate+'%)'],
-    ['🎯','Cost per bound acct', cpb]
-  ].map(k=>`<div class="kpi"><span class="ic">${k[0]}</span><h4>${k[2]}</h4><p>${k[1]}</p></div>`).join('');
-  $('leadsTable').innerHTML = '<thead><tr><th>Received</th><th>Business</th><th>Phone — click to call</th><th>Class</th><th>Coverage</th><th>State</th><th>Cost</th><th>Status</th><th></th></tr></thead><tbody>'+
-   (rows.map(l=>{ const d=l.data; const ph=d.phone_number||''; const tel=ph.replace(/[^0-9]/g,''); const key=leadKey(d); const refd=REFUND_PHONES.has(ph); const mm=leadMatch(d);
-    const wonBadge = mm.bound?' <span class="pill" style="font-size:9px;background:#16a76522;color:#4ade80;border-color:#16a76555">✓ bound</span>':(mm.converted?' <span class="pill p-quoted" style="font-size:9px">in book</span>':'');
-    return `<tr>
-     <td><span class="date-chip">${esc(String(d.sent_timestamp_edt||d._report_date||'').slice(0,16))}</span></td>
-     <td style="font-weight:600;max-width:200px">${esc(d.legal_entity||'—')}${wonBadge}${refd?' <span class="pill p-expired" style="font-size:9px">refunded</span>':''}</td>
+    ['☎','Need action now', workNow, 'k-red'],
+    ['◎','Leads this month', LEADS.filter(inMo).length,''],
+    ['＄','Spend this month', fmt$(sum(LEADS.filter(inMo))),''],
+    ['∑','All-time leads', LEADS.length,''],
+    ['✅','Bound from leads', bound+' ('+convRate+'%)','k-green'],
+    ['🎯','Cost per bound acct', bound?fmt$(totalSpend/bound):'—','']
+  ].map(k=>`<div class="kpi ${k[3]}"><span class="ic">${k[0]}</span><h4>${k[2]}</h4><p>${k[1]}</p></div>`).join('');
+  $('leadsTable').innerHTML = '<thead><tr><th>Priority</th><th>Business</th><th>Phone</th><th>Attempts</th><th>Log this call</th><th>Cost</th><th>Status</th><th></th></tr></thead><tbody>'+
+   (rows.map(l=>{ const d=l.data; const ph=d.phone_number||''; const tel=ph.replace(/[^0-9]/g,''); const key=leadKey(d); const P=pr.get(l);
+    const acts=(LEAD_ACT[key]||[]); const tries=acts.filter(a=>a.kind!=='note').length; const last=acts[0];
+    const dots = tries? Array.from({length:Math.min(tries,5)},()=>'<span class="try-dot on"></span>').join('')+(tries>5?'<span class="try-more">+'+(tries-5)+'</span>':'') : '<span class="try-none">no attempts</span>';
+    const cls = String(d.business_class||'').replace(/^[0-9]+\s*-\s*/,'');
+    const sub = [cls.slice(0,44), d.state, agoTxt(d.sent_timestamp_edt? new Date(d.sent_timestamp_edt.replace(' ','T')).toISOString():null)||String(d.sent_timestamp_edt||'').slice(0,10)].filter(Boolean).join(' · ');
+    return `<tr class="ld-row" data-key="${esc(key)}" title="Open lead">
+     <td><span class="pr-chip ${P.cls}">${P.label}</span></td>
+     <td style="max-width:250px"><b style="font-size:13.2px;font-weight:600;display:block">${esc(d.legal_entity||'—')}</b><span style="font-size:11px;color:var(--text-muted)">${esc(sub)}</span></td>
      <td>${ph?`<a class="act-btn primary" style="padding:4px 10px" href="tel:+1${tel}">✆ ${esc(ph)}</a>`:'—'}</td>
-     <td style="max-width:230px;font-size:11px;color:var(--text-secondary)">${esc(String(d.business_class||'').replace(/^[0-9]+\s*-\s*/,'').slice(0,55))}</td>
-     <td style="font-size:11px">${esc(String(d.coverage_type||'—').slice(0,42))}</td>
-     <td>${esc(d.state||'—')}</td>
+     <td><div class="try-wrap">${dots}${last?`<span class="try-last">${agoTxt(last.ts)}</span>`:''}</div></td>
+     <td><div class="log-btns">
+       <button class="log-btn" title="No answer" onclick="logAttempt('${esc(key)}','no_answer')">No ans</button>
+       <button class="log-btn" title="Left voicemail" onclick="logAttempt('${esc(key)}','voicemail')">VM</button>
+       <button class="log-btn ok" title="Connected — talked to them" onclick="logAttempt('${esc(key)}','connected')">Talked</button>
+     </div></td>
      <td style="font-weight:600">${d.purchase_amount!=null?'$'+d.purchase_amount:'—'}</td>
-     <td><select class="filter-select" style="padding:4px 8px;font-size:11px" onchange="setLeadStatus('${esc(key)}',this.value)">${['new','called','quoted','won','dead'].map(s=>`<option ${((LEAD_STATUS[key]||'new')===s)?'selected':''}>${s}</option>`).join('')}</select></td>
-     <td><button class="act-btn" style="color:#4ade80" onclick="ixStartFromLeadKey('${esc(key)}')">▶ Intake</button> <button class="act-btn" style="color:#c4b5fd" onclick="qqFromLeadKey('${esc(key)}')">⚡ Quote</button></td></tr>`; }).join('')||'<tr><td colspan="9"><div class="empty-note">No leads match</div></td></tr>')+'</tbody>';
+     <td><select class="filter-select" style="padding:4px 8px;font-size:11px" onchange="setLeadStatus('${esc(key)}',this.value)">${['new','called','quoted','won','dead'].map(x=>`<option ${((LEAD_STATUS[key]||'new')===x)?'selected':''}>${x}</option>`).join('')}</select></td>
+     <td><button class="act-btn" style="color:#4ade80;white-space:nowrap" onclick="ixStartFromLeadKey('${esc(key)}')">▶ Intake</button></td></tr>`; }).join('')||'<tr><td colspan="8"><div class="empty-note">No leads match</div></td></tr>')+'</tbody>';
   $('ldFoot').textContent = `● ${rows.length} shown of ${LEADS.length} unique leads · syncs automatically from BoldPenguin daily reports`;
 }
 async function setLeadStatus(key, v){
@@ -1771,8 +1936,9 @@ function ixRenderLife(){
   $('ixLife').innerHTML=LIFE.map((l,i)=>`<div class="lifeseg ${i<idx?'done':(i===idx?'on':'')}"><span class="dot">${l.icon}</span><span class="lbl">${l.label}</span></div>${i<LIFE.length-1?'<span class="lifearrow"></span>':''}`).join('');
 }
 function ixRenderSteps(){
-  $('ixSteps').innerHTML=IX_STEPS.map((t,i)=>`<div class="ix-step ${i<ixStep?'done':''} ${i===ixStep?'cur':''}"><span class="n">${i<ixStep?'✓':i+1}</span>${t}</div>`).join('');
+  $('ixSteps').innerHTML=IX_STEPS.map((t,i)=>`<div class="ix-step ${i<ixStep?'done':''} ${i===ixStep?'cur':''}" onclick="ixGoto(${i})" title="Jump to ${t}"><span class="n">${i<ixStep?'✓':i+1}</span>${t}</div>`).join('');
 }
+function ixGoto(i){ ixStep=i; ixRender(); window.scrollTo({top:0,behavior:'smooth'}); }
 function ixInput(q){
   const v=IX[q.id]==null?'':IX[q.id];
   if(q.type==='yn') return `<div class="ix-chips">${['Yes','No'].map(o=>`<div class="ix-chip ${v===o?'on':''}" onclick="ixSetYN('${q.id}','${o}')">${o}</div>`).join('')}</div>`;
@@ -1956,7 +2122,6 @@ function ixOutputCard(){
       <div class="filter-select" style="cursor:pointer" id="ixtab-application" onclick="ixShowOut('application')">📝 Application</div>
       <div class="filter-select" style="cursor:pointer" id="ixtab-submission" onclick="ixShowOut('submission')">📤 MGA submission</div>
       <div class="filter-select" style="cursor:pointer" id="ixtab-proposal" onclick="ixShowOut('proposal')">📄 Client proposal</div>
-      <div class="filter-select" style="cursor:pointer" id="ixtab-forms" onclick="ixShowOut('forms')">🗂 Forms</div>
     </div>
     <div id="ixOutArea"></div>
     <div class="ix-nav" style="margin-top:14px">
@@ -1968,9 +2133,8 @@ function ixOutputCard(){
 }
 function ixShowOut(w){
   ixCurOut=w;
-  ['application','submission','proposal','forms'].forEach(t=>{const el=$('ixtab-'+t); if(el){ el.style.background=(t===w)?'var(--purple)':''; el.style.color=(t===w)?'#fff':''; }});
+  ['application','submission','proposal'].forEach(t=>{const el=$('ixtab-'+t); if(el) el.style.background=(t===w)?'var(--purple)':'';el&&(el.style.color=(t===w)?'#fff':'');});
   const a=$('ixOutArea'); if(!a) return;
-  if(w==='forms'){ a.innerHTML=ixFormsHtml(); return; }
   if(w==='proposal'){
     a.innerHTML=`<div style="background:#0b1120;border:1px solid var(--border-color);border-radius:12px;padding:14px 16px;margin-bottom:12px">
        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">Got the quote back from the MGA? Enter it — taxes &amp; fees are already in the carrier's number.</div>
@@ -1978,7 +2142,6 @@ function ixShowOut(w){
          <div class="fld"><label>Carrier quoted premium (incl. taxes/fees)</label><input class="q-in" value="${esc(IX.carrierQuote||'')}" placeholder="$" oninput="ixSet('carrierQuote',this.value);ixShowOut('proposal')"></div>
          <div class="fld"><label>Your broker fee</label><input class="q-in" value="${IX.brokerFee!=null?esc(IX.brokerFee):'500'}" placeholder="$" oninput="ixSet('brokerFee',this.value);ixShowOut('proposal')"></div>
        </div></div>
-       ${ixFeeComplianceHtml()}
        <div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="act-btn" onclick="ixCopy()">⧉ Copy proposal</button></div>
        <div class="ix-out">${esc(ixProposal())}</div>`;
   } else {
@@ -2086,120 +2249,10 @@ function ixCcPick(arg){
 function ixCcClear(){ IX.classCode=''; IX.naics=''; IX.classDesc=''; const pk=$('ixCcPick'); if(pk) pk.innerHTML=''; }
 
 /* ================= MARKETS directory ================= */
-let MARKETS=[]; let _mkLoaded=false; let STATE_FEES={}; let FORMS=[]; let IPFS=[];
+let MARKETS=[]; let _mkLoaded=false;
 async function loadMarkets(){
-  try{
-    const [mk,sf,fm,ip]=await Promise.all([
-      sb.from('markets').select('*').order('name'),
-      sb.from('state_fees').select('*'),
-      sb.from('forms').select('*'),
-      sb.from('ipfs').select('*')
-    ]);
-    MARKETS=mk.data||[]; _mkLoaded=true;
-    STATE_FEES={}; (sf.data||[]).forEach(r=>{ STATE_FEES[r.state]=r; });
-    FORMS=fm.data||[]; IPFS=ip.data||[];
-    _MKI=null;
-    if(typeof rerenderAll==='function') rerenderAll();
-    if($('atriskTable')) renderAtRisk();
-  }catch(e){ if(!MARKETS)MARKETS=[]; }
-}
-
-/* ================= AT-RISK (premium finance) ================= */
-const _normName = s => String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-const RISK_RANK={CANCELLED:0,DELINQUENT:1,GRACE:2,CURRENT:3};
-function arDays(d){ if(!d) return null; const t=new Date(d+'T00:00:00'); if(isNaN(t)) return null; return Math.round((t-NOW)/86400000); }
-function renderAtRisk(){
-  if(!$('atriskTable')) return;
-  const q=($('arSearch')?$('arSearch').value:'').toLowerCase(), st=$('arStatus')?$('arStatus').value:'risk';
-  let rows=IPFS.filter(r=>{
-    if(q && !((r.insured||'')+' '+(r.policy_no||'')).toLowerCase().includes(q)) return false;
-    if(st==='risk' && (r.status||'').toUpperCase()==='CURRENT') return false;
-    if(st && st!=='risk' && (r.status||'').toUpperCase()!==st) return false;
-    return true;
-  });
-  rows.sort((a,b)=>{ const ra=RISK_RANK[(a.status||'').toUpperCase()]??9, rb=RISK_RANK[(b.status||'').toUpperCase()]??9; if(ra!==rb) return ra-rb; return String(a.eligible_cancel_date||'zz').localeCompare(String(b.eligible_cancel_date||'zz')); });
-  const up=(s)=>String(s||'').toUpperCase();
-  const risk=IPFS.filter(r=>up(r.status)!=='CURRENT');
-  $('arKpis').innerHTML=[
-    ['⚠', 'At-risk accounts', risk.length],
-    ['⛔','Cancelled', IPFS.filter(r=>up(r.status)==='CANCELLED').length],
-    ['🕐','Delinquent / grace', IPFS.filter(r=>['DELINQUENT','GRACE'].includes(up(r.status))).length],
-    ['🏦','Financed on file', IPFS.length]
-  ].map(k=>`<div class="kpi"><span class="ic">${k[0]}</span><h4>${k[2]}</h4><p>${k[1]}</p></div>`).join('');
-  const pill=s=>{ s=up(s); const map={CANCELLED:'p-expired',DELINQUENT:'p-expired',GRACE:'p-due',CURRENT:'p-bound'}; return `<span class="pill ${map[s]||'p-unknown'}">${esc(s||'—')}</span>`; };
-  const clientByNorm=()=>{ try{ return (typeof clientIndex==='function')?clientIndex().byName:null; }catch(e){ return null; } };
-  $('atriskTable').innerHTML='<thead><tr><th>Insured</th><th>Status</th><th>Acct #</th><th>Balance</th><th>Eligible cancel</th><th>AutoPay</th><th></th></tr></thead><tbody>'+
-    (rows.map(r=>{ const d=arDays(r.eligible_cancel_date); const dcls=d==null?'':(d<=7?'d-red':(d<=30?'d-amber':'d-ok'));
-      const idx=clientByNorm(); const c=idx?idx.get(_normName(r.insured)):null;
-      return `<tr ${c?`onclick="openModal(${c._id})" style="cursor:pointer"`:''}>
-        <td style="font-weight:600">${esc(r.insured||'—')}${c?' <span class="pill" style="font-size:9px;background:#8b5cf622;color:#c4b5fd;border-color:#8b5cf555">in book</span>':''}</td>
-        <td>${pill(r.status)}</td>
-        <td style="font-family:ui-monospace,monospace;font-size:11px;color:var(--text-secondary)">${esc(r.policy_no||'—')}</td>
-        <td style="font-variant-numeric:tabular-nums">${r.account_balance!=null?fmt$(r.account_balance):(r.amount_due!=null?fmt$(r.amount_due):'—')}</td>
-        <td>${r.eligible_cancel_date?`<span class="date-chip">${esc(r.eligible_cancel_date)}</span>${d!=null?`<span class="days ${dcls}">${d}d</span>`:''}`:'—'}</td>
-        <td>${up(r.autopay)==='YES'?'<span style="color:#4ade80">✓ ACH</span>':'<span style="color:#fca5a5">off</span>'}</td>
-        <td>${r.insured?`<a class="act-btn primary" style="padding:4px 10px" href="tel:">✆ Call</a>`:''}</td></tr>`; }).join('')||'<tr><td colspan="7"><div class="empty-note">Nothing here — no at-risk financed accounts.</div></td></tr>')+'</tbody>';
-  $('arFoot').textContent=`● ${rows.length} shown of ${IPFS.length} financed accounts · IPFS import (freshest data on file)`;
-}
-
-/* ================= Commission roll-up ================= */
-let _MKI=null;
-function _mkList(){ if(_MKI) return _MKI; _MKI=(MARKETS||[]).filter(m=>m.commission_new!=null).map(m=>({k:_normName(m.name),rate:Number(m.commission_new)})); return _MKI; }
-function _rateFor(carrier){ const c=_normName(carrier); if(!c) return null; for(const m of _mkList()){ if(m.k.length>=3 && (c===m.k || c.includes(m.k))) return m.rate; } return null; }
-function commissionByProducer(){
-  const out={}; let matched=0, total=0;
-  (CLIENTS||[]).forEach(cl=>{ const ag=cl.assignedTo||'Unassigned';
-    (cl.policies||[]).forEach(p=>{ if(p.status==='bound' && typeof p.premium==='number'){ total++; const r=_rateFor(p.carrier); if(r!=null){ matched++; out[ag]=(out[ag]||0)+p.premium*r/100; } } });
-  });
-  return {out, matched, total};
-}
-function commissionCardHtml(){
-  if(!MARKETS||!MARKETS.length) return '';
-  const {out,matched}=commissionByProducer();
-  const rows=Object.entries(out).sort((a,b)=>b[1]-a[1]);
-  if(!rows.length) return '';
-  const body=rows.map(([a,v])=>`<div class="leader-row"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:linear-gradient(135deg,${(typeof AGENT_COLORS!=='undefined'&&AGENT_COLORS[a])||'#6d5ef0,#06b6d4'})">${initials(a)}</div><div class="nm">${esc(a)}</div><div class="val">${fmt$(v)}</div></div>`).join('');
-  return `<div class="card" style="grid-column:span 4"><h3><span class="bar-ind" style="background:#22c55e"></span>Est. Commission by Producer</h3>${body}<div style="font-size:10.5px;color:var(--text-muted);margin-top:8px">Estimate: bound premium × carrier commission %, on ${matched} policies matched to a market rate.</div></div>`;
-}
-function ixFeeComplianceHtml(){
-  if(!IX.state) return '';
-  const sf=STATE_FEES[IX.state];
-  if(!sf) return `<div style="font-size:11.5px;color:var(--text-muted);margin-bottom:10px">No broker-fee rule on file for ${esc(IX.state)}.</div>`;
-  const fee=ixNum(IX.brokerFee)!=null?ixNum(IX.brokerFee):500;
-  const premium=ixNum(IX.carrierQuote)||0;
-  let warn='';
-  if(sf.max_amount!=null && fee>Number(sf.max_amount)) warn=`Exceeds ${IX.state} max broker fee of $${sf.max_amount}`;
-  else if(sf.max_pct!=null && premium>0 && fee>premium*Number(sf.max_pct)/100) warn=`Exceeds ${IX.state} cap of ${sf.max_pct}% of premium`;
-  const bits=[];
-  bits.push(sf.fee_allowed===false?'Broker fee NOT permitted':'Broker fee allowed');
-  if(sf.fee_cap) bits.push(sf.fee_cap);
-  if(sf.max_pct!=null) bits.push('max '+sf.max_pct+'%');
-  if(sf.max_amount!=null) bits.push('max $'+sf.max_amount);
-  if(sf.taxed===true) bits.push('fee is taxed'+(sf.tax_rate!=null?(' @ '+sf.tax_rate+'%'):''));
-  const col=warn?'#fca5a5':'#86efac', bg=warn?'#ef444412':'#22c55e10', bd=warn?'#ef444455':'#22c55e33';
-  return `<div style="font-size:12px;color:${col};margin-bottom:12px;border:1px solid ${bd};background:${bg};border-radius:9px;padding:9px 12px">
-    <b>${esc(IX.state)} broker-fee rule:</b> ${esc(bits.join(' · '))}${warn?('<br>⚠ '+esc(warn)):''}
-    ${sf.notes?`<div style="color:var(--text-muted);margin-top:4px">${esc(sf.notes)}</div>`:''}</div>`;
-}
-function ixFormsHtml(){
-  if(!FORMS.length) return '<div class="ix-out">No forms library loaded.</div>';
-  const selSet=new Set(ixSel);
-  const want=f=>{
-    const tags=(f.lines||'').split(',').map(s=>s.trim()).filter(Boolean);
-    if(tags.some(t=>selSet.has(t))) return true;
-    if(/125|common/i.test((f.form_no||'')+' '+(f.category||''))||f.lines==='Common') return true;
-    if(IX.state && (f.state||'').toUpperCase().includes(IX.state)) return true;
-    return false;
-  };
-  let rows=FORMS.filter(want);
-  const seen=new Set(); rows=rows.filter(r=>{const k=(r.form_no||r.name); if(seen.has(k))return false; seen.add(k); return true;});
-  if(!rows.length) rows=FORMS.filter(f=>/12[56]|140/.test(f.form_no||''));
-  const item=f=>{ const u=(f.url&&/^https?:/i.test(f.url))?f.url:null;
-    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border-subtle)">
-      <span class="pill line" style="font-size:10px;min-width:66px;text-align:center">${esc(f.form_no||f.lines||'form')}</span>
-      <div style="flex:1"><div style="font-size:13px">${esc(f.name||'')}</div>${f.category?`<div style="font-size:10.5px;color:var(--text-muted)">${esc(f.category)}${f.state&&f.state!=='ALL'?(' · '+esc(f.state)):''}</div>`:''}</div>
-      ${u?`<a class="act-btn" href="${esc(u)}" target="_blank" rel="noopener" style="padding:4px 10px">Open ↗</a>`:'<span style="font-size:10.5px;color:var(--text-muted)">portal only</span>'}</div>`; };
-  return `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">The forms this submission needs — fill them with the application details on the first tab.</div><div>${rows.map(item).join('')}</div>`;
+  try{ const {data}=await sb.from('markets').select('*').order('name'); MARKETS=data||[]; _mkLoaded=true; }
+  catch(e){ MARKETS=[]; }
 }
 function mkPct(v){ return (v==null||v==='')?'—':(Number(v).toFixed(2).replace(/\.00$/,'')+'%'); }
 function renderMarkets(){
@@ -2237,5 +2290,386 @@ function renderMarkets(){
 }
 
 </script>
+<!-- ================= REAL-TIME LEADS (v3, 2026-08-26) =================
+     Pushes new BoldPenguin leads into the open page the moment the webhook
+     writes them. Supabase Realtime on public.leads is the primary channel;
+     a lightweight head-count poll is the fallback for a dropped socket or a
+     laptop waking from sleep. Nothing here changes how leads are stored. -->
+<style>
+#ldLiveWrap{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.ld-toast{min-width:260px;max-width:340px;background:#0b1220f2;border:1px solid #22c55e66;border-left:3px solid #22c55e;
+  border-radius:10px;padding:11px 13px;box-shadow:0 10px 34px #000a;backdrop-filter:blur(6px);cursor:pointer;
+  animation:ldIn .32s cubic-bezier(.2,.9,.3,1.3);font-size:12.5px;color:#e2e8f0}
+.ld-toast b{display:block;font-size:13.5px;color:#7dd3fc;margin-bottom:2px}
+.ld-toast .sub{color:#94a3b8;font-size:11.5px;margin-top:3px}
+.ld-toast.out{animation:ldOut .3s forwards}
+@keyframes ldIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes ldOut{to{opacity:0;transform:translateX(24px)}}
+#ldLiveDot{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:#4ade80;margin-left:10px;vertical-align:middle}
+#ldLiveDot i{width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;animation:ldPulse 2s infinite}
+#ldLiveDot.stale{color:#fbbf24} #ldLiveDot.stale i{background:#fbbf24;animation:none}
+@keyframes ldPulse{0%,100%{box-shadow:0 0 0 0 #22c55e88}70%{box-shadow:0 0 0 6px #22c55e00}}
+.nav-badge{display:inline-block;min-width:16px;padding:0 5px;margin-left:5px;border-radius:9px;background:#22c55e;
+  color:#04170c;font-size:10px;font-weight:800;line-height:16px;text-align:center}
+</style>
+<div id="ldLiveWrap"></div>
+<script>
+(function(){
+  var POLL_MS = 45000, booted = false, chan = null, poller = null, lastOk = true;
+  var lastSeen = null;           // ISO of the newest leads.created_at we know about
+  var unseen = 0;                // new leads that arrived while off the Leads tab
+  var wrap = function(){ return document.getElementById('ldLiveWrap'); };
+
+  function chime(){
+    try{
+      var C = window.AudioContext || window.webkitAudioContext; if(!C) return;
+      var ctx = new C(), o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.type = 'sine';
+      o.frequency.setValueAtTime(880, ctx.currentTime);
+      o.frequency.setValueAtTime(1320, ctx.currentTime + 0.11);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.42);
+      o.start(); o.stop(ctx.currentTime + 0.45);
+    }catch(e){}
+  }
+
+  function toast(d){
+    var w = wrap(); if(!w) return;
+    var cost = (d && d.purchase_amount != null) ? ('$' + d.purchase_amount) : '';
+    var bits = [d && d.state, String((d && d.business_class) || '').replace(/^[0-9]+\s*-\s*/, ''), cost]
+                 .filter(Boolean).join(' · ');
+    var el = document.createElement('div');
+    el.className = 'ld-toast';
+    el.innerHTML = '<b>◎ New lead — ' + esc((d && d.legal_entity) || 'BoldPenguin') + '</b>' +
+                   esc((d && d.phone_number) || '') +
+                   (bits ? '<div class="sub">' + esc(bits.slice(0, 70)) + '</div>' : '') +
+                   '<div class="sub">click to open Leads</div>';
+    el.onclick = function(){ try{ go('leads'); }catch(e){} el.remove(); clearBadge(); };
+    w.appendChild(el);
+    setTimeout(function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 320); }, 12000);
+  }
+
+  function badge(){
+    var b = document.querySelector('.nav-btn[data-view="leads"]'); if(!b) return;
+    var s = b.querySelector('.nav-badge');
+    if(!unseen){ if(s) s.remove(); return; }
+    if(!s){ s = document.createElement('span'); s.className = 'nav-badge'; b.appendChild(s); }
+    s.textContent = unseen;
+  }
+  function clearBadge(){ unseen = 0; badge(); }
+
+  function dot(ok){
+    lastOk = ok;
+    var f = document.getElementById('ldFoot'); if(!f) return;
+    var d = document.getElementById('ldLiveDot');
+    if(!d){ d = document.createElement('span'); d.id = 'ldLiveDot'; f.appendChild(d); }
+    d.className = ok ? '' : 'stale';
+    d.innerHTML = '<i></i>' + (ok ? 'live' : 'reconnecting…');
+  }
+
+  // Full refresh of the leads dataset + repaint, preserving the user's filters.
+  async function refresh(newRows){
+    try{
+      await loadLeads();
+      if(typeof renderLeads === 'function') renderLeads();
+      dot(true);
+      (newRows || []).forEach(function(d){ toast(d); });
+      if(newRows && newRows.length){
+        chime();
+        var onLeads = (document.getElementById('view-leads') || {}).classList;
+        if(!onLeads || !onLeads.contains('active')){ unseen += newRows.length; badge(); }
+      }
+    }catch(e){}
+  }
+
+  // Fallback: ask only for a count of rows newer than what we've seen.
+  async function poll(){
+    try{
+      var q = sb.from('leads').select('id', { count: 'exact', head: true });
+      if(lastSeen) q = q.gt('created_at', lastSeen);
+      var r = await q;
+      if(r.error) { dot(false); return; }
+      if(lastSeen === null){ lastSeen = new Date().toISOString(); dot(true); return; }
+      if((r.count || 0) > 0){
+        lastSeen = new Date().toISOString();
+        var before = LEADS.length;
+        await refresh([]);
+        if(LEADS.length > before) { chime(); toast(LEADS[0] && LEADS[0].data); }
+      } else { dot(true); }
+    }catch(e){ dot(false); }
+  }
+
+  function subscribe(){
+    try{
+      if(chan) { try{ sb.removeChannel(chan); }catch(e){} }
+      chan = sb.channel('leads-live')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, function(p){
+          var d = p && p.new && p.new.data;
+          if(!d || d._type !== 'lead') return;
+          lastSeen = new Date().toISOString();
+          refresh([d]);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'lead_status' }, function(){
+          refresh([]);
+        })
+        .subscribe(function(status){
+          dot(status === 'SUBSCRIBED');
+          if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){ setTimeout(subscribe, 5000); }
+        });
+    }catch(e){ dot(false); }
+  }
+
+  function start(){
+    if(booted) return; booted = true;
+    lastSeen = new Date().toISOString();
+    subscribe();
+    poller = setInterval(poll, POLL_MS);
+    // A sleeping laptop kills the socket; catch up the moment the tab is looked at.
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState === 'visible'){ subscribe(); poll(); }
+    });
+    window.addEventListener('online', function(){ subscribe(); poll(); });
+    var nav = document.querySelector('.nav-btn[data-view="leads"]');
+    if(nav) nav.addEventListener('click', clearBadge);
+    // renderLeads() rewrites the footer text, which wipes the indicator - put it
+    // back after every repaint so a filter change doesn't look like it went dead.
+    if(typeof renderLeads === 'function'){
+      var _origRender = renderLeads;
+      window.renderLeads = renderLeads = function(){
+        var r = _origRender.apply(this, arguments);
+        try{ dot(lastOk); }catch(e){}
+        return r;
+      };
+    }
+    var sub = document.querySelector('#view-leads .page-sub');
+    if(sub) sub.textContent = 'Every lead purchased from the exchange — pushed in live the second BoldPenguin sends it, and reconciled against the daily report. Click a phone number to call.';
+    dot(true);
+  }
+
+  // Wait until the app has signed in and loaded its first batch of leads.
+  var tries = 0;
+  var waiter = setInterval(function(){
+    // Guarded: if the app's own scripts failed to run, LEADS stays in the
+    // temporal dead zone and a bare `typeof` throws. Never spam the console.
+    try{
+      if(++tries > 1200){ clearInterval(waiter); return; }   // give up after ~14 min
+      var authed = document.getElementById('authWrap') && document.getElementById('authWrap').style.display === 'none';
+      if(!authed || !document.getElementById('ldFoot')) return;
+      if(typeof LEADS === 'undefined' || typeof loadLeads !== 'function') return;
+      clearInterval(waiter); start();
+    }catch(e){ /* app not ready (or broken) - keep quiet */ }
+  }, 700);
+})();
+</script>
+<!-- ================= LEAD ROW → PROSPECT CARD (v4, 2026-08-27) =================
+     Clicking anywhere on a lead row now opens something:
+       • lead already matched to a client in the book  → the normal client modal (openModal)
+       • lead not yet in the book                       → a prospect card with everything
+         BoldPenguin sent, status control, click-to-call/email, and Start Intake /
+         Quick Quote handoffs (Start Intake is what creates the pipeline record).
+     Purely additive: one style block, one modal div, one script block. renderLeads() only
+     gained class="ld-row" data-key on each <tr>. -->
+<style>
+#leadsTable tbody tr.ld-row{cursor:pointer}
+#leadsTable tbody tr.ld-row:hover td{background:var(--bg-card-hover)}
+#leadsTable tbody tr.ld-row td:nth-child(2){color:#7dd3fc}
+#leadsTable tbody tr.ld-row:hover td:nth-child(2){text-decoration:underline;text-underline-offset:3px}
+.ldm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 20px}
+.ldm-grid .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:3px}
+.ldm-grid .v{font-size:13px;color:var(--text-primary);word-break:break-word}
+.ldm-grid .v a{color:#7dd3fc;text-decoration:none}
+.ldm-grid .v a:hover{text-decoration:underline}
+.ldm-sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin:20px 0 10px;display:flex;align-items:center;gap:10px}
+.ldm-sec:after{content:"";flex:1;height:1px;background:var(--border-subtle)}
+.ldm-next{background:#16a76514;border:1px solid #16a76544;border-radius:12px;padding:13px 15px;margin-top:18px;font-size:12.5px;color:#cbd5e1;line-height:1.5}
+.ldm-next b{color:#4ade80}
+.ldm-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;font-size:12.5px;color:var(--text-secondary)}
+.ldm-acts{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--text-secondary)}
+.ldm-acts .ic{display:inline-block;width:18px;text-align:center}
+.ldm-acts .t{color:var(--text-muted);font-size:11px;margin-left:6px}
+.ldm-raw{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-secondary);background:#0b1120;border:1px solid var(--border-color);border-radius:10px;padding:10px 12px;white-space:pre-wrap;word-break:break-word;max-height:220px;overflow:auto;margin-top:8px}
+</style>
+<div class="modal-bg" id="ldModalBg" onclick="if(event.target===this)ldClose()">
+  <div class="modal">
+    <div class="modal-head" style="padding-bottom:18px">
+      <div class="mh-top">
+        <div class="avatar" id="ldmAvatar">–</div>
+        <div class="mh-title">
+          <h2 id="ldmName"></h2>
+          <div class="ops" id="ldmOps"></div>
+          <div class="contact" id="ldmContact"></div>
+        </div>
+        <div class="mh-actions" id="ldmActions"></div>
+      </div>
+    </div>
+    <div class="modal-body" id="ldmBody"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var g = function(id){ return document.getElementById(id); };
+  var cur = null; // key of the lead currently shown
+
+  // Friendly labels for the fields BoldPenguin sends (daily report + webhook extras).
+  var LABELS = {
+    legal_entity:'Business', phone_number:'Phone', contact_name:'Contact', contact_email:'Email',
+    business_class:'Class', naics:'NAICS', naics_code:'NAICS', coverage_type:'Coverage requested',
+    state:'State', city:'City', zip:'ZIP', address:'Address', legal_structure:'Legal structure',
+    years_in_business:'Years in business', purchase_amount:'Cost', sent_timestamp_edt:'Received (ET)',
+    campaign:'Campaign', campaign_name:'Campaign', source:'Source', website:'Website',
+    annual_revenue:'Annual revenue', employees:'Employees', num_employees:'Employees', payroll:'Payroll'
+  };
+  // Order the grid follows; anything else BoldPenguin sent is appended after.
+  var ORDER = ['sent_timestamp_edt','purchase_amount','business_class','naics','naics_code','coverage_type',
+               'contact_name','contact_email','phone_number','city','state','zip','address','legal_structure',
+               'years_in_business','annual_revenue','employees','num_employees','payroll','website','campaign','campaign_name','source'];
+  var HIDE = { legal_entity:1, _type:1 };
+
+  function human(k){ return LABELS[k] || String(k).replace(/^_/,'').replace(/_/g,' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); }); }
+  function fmtVal(k, v){
+    if(v == null || v === '') return null;
+    if(Array.isArray(v)) return v.length ? esc(v.map(String).join(', ')) : null;
+    if(typeof v === 'object') return '<span class="ldm-raw" style="display:block;margin:0">' + esc(JSON.stringify(v, null, 1)) + '</span>';
+    var s = String(v);
+    if(k === 'purchase_amount') return '$' + esc(s);
+    if(k === 'contact_email' && /@/.test(s)) return '<a href="mailto:' + esc(s) + '">' + esc(s) + '</a>';
+    if(k === 'phone_number'){ var t = s.replace(/[^0-9]/g,''); return t ? '<a href="tel:+1' + t + '">✆ ' + esc(s) + '</a>' : esc(s); }
+    if(k === 'website'){ var u = /^https?:/.test(s) ? s : 'https://' + s; return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(s) + '</a>'; }
+    if(k === 'business_class') return esc(s.replace(/^[0-9]+\s*-\s*/, ''));
+    return esc(s);
+  }
+
+  window.ldClose = function(){
+    var bg = g('ldModalBg'); if(bg) bg.classList.remove('open');
+    // Only release the page scroll if the client modal isn't also open.
+    var m = g('modalBg'); if(!(m && m.classList.contains('open'))) document.body.style.overflow = '';
+    cur = null;
+  };
+
+  window.ldAttemptsHtml = function(key){
+    var acts = (typeof LEAD_ACT!=='undefined' && LEAD_ACT[key]) || [];
+    var k = esc(key);
+    var btns = '<div class="log-btns" style="margin-bottom:10px">' +
+      '<button class="log-btn" onclick="logAttempt(\'' + k + '\',\'no_answer\')">☎ No answer</button>' +
+      '<button class="log-btn" onclick="logAttempt(\'' + k + '\',\'voicemail\')">🎙 Left voicemail</button>' +
+      '<button class="log-btn ok" onclick="logAttempt(\'' + k + '\',\'connected\')">✓ Connected</button>' +
+      '<button class="log-btn" style="color:#fca5a5;border-color:#ef444455" onclick="logAttempt(\'' + k + '\',\'bad_number\')">✕ Bad number</button></div>';
+    var list = acts.length
+      ? '<div class="ldm-acts">' + acts.slice(0,12).map(function(a){
+          var m = (typeof LD_KINDS!=='undefined' && LD_KINDS[a.kind]) || [a.kind,'•'];
+          return '<div><span class="ic">' + m[1] + '</span> ' + esc(m[0]) + ' <span class="t">' + esc(agoTxt(a.ts)) + '</span></div>';
+        }).join('') + '</div>'
+      : '<div style="font-size:12px;color:var(--text-muted)">No attempts logged yet — use the buttons above after each call.</div>';
+    return '<div id="ldmActs">' + btns + list + '</div>';
+  };
+
+  window.ldRefreshCard = function(key){
+    if(cur !== key) return;
+    var box = g('ldmActs'); if(box) box.outerHTML = ldAttemptsHtml(key);
+    var p = g('ldmStatusPill'); if(p) p.textContent = (typeof LEAD_STATUS!=='undefined' && LEAD_STATUS[key]) || 'new';
+  };
+
+  window.ldSetStatus = function(key, v){
+    try{ setLeadStatus(key, v); }catch(e){}
+    // setLeadStatus repaints the table; keep the modal's pill in step.
+    var p = g('ldmStatusPill'); if(p) p.textContent = v;
+  };
+
+  window.ldIntake = function(key){ ldClose(); try{ ixStartFromLeadKey(key); }catch(e){ if(typeof ixStart==='function') ixStart(); } };
+  window.ldQuote  = function(key){ ldClose(); try{ qqFromLeadKey(key); }catch(e){} };
+
+  window.ldOpen = function(key){
+    var l = ((typeof LEADS !== 'undefined' && LEADS) || []).find(function(x){ return leadKey(x.data) === key; });
+    if(!l) return;
+    var d = l.data || {};
+
+    // Already in the book (matched by name or phone)? Go straight to that client's page.
+    var mm = null; try{ mm = leadMatch(d); }catch(e){}
+    if(mm && mm.converted && mm.client && typeof openModal === 'function'){
+      var id = (mm.client._id != null) ? mm.client._id : CLIENTS.indexOf(mm.client);
+      if(id >= 0){ openModal(id); return; }
+    }
+
+    cur = key;
+    var name = d.legal_entity || 'Unnamed lead';
+    var ph = d.phone_number || ''; var tel = ph.replace(/[^0-9]/g,'');
+    var status = ((typeof LEAD_STATUS !== 'undefined' && LEAD_STATUS && LEAD_STATUS[key]) || 'new');
+    var refunded = !!(typeof REFUND_PHONES !== 'undefined' && REFUND_PHONES && REFUND_PHONES.has && REFUND_PHONES.has(ph));
+    var cls = String(d.business_class || '').replace(/^[0-9]+\s*-\s*/, '');
+
+    g('ldmAvatar').textContent = initials(name);
+    g('ldmAvatar').style.background = 'linear-gradient(135deg,' + avColor(name) + ')';
+    g('ldmName').innerHTML = esc(name) +
+      ' <span class="pill" id="ldmStatusPill" style="background:#7dd3fc22;color:#7dd3fc;border-color:#7dd3fc55;vertical-align:3px">' + esc(status) + '</span>' +
+      ' <span class="pill" style="background:#22c55e22;color:#4ade80;border-color:#22c55e55;vertical-align:3px">BoldPenguin lead</span>' +
+      (refunded ? ' <span class="pill p-expired" style="vertical-align:3px">refunded</span>' : '');
+    g('ldmOps').textContent = [cls, d.coverage_type].filter(Boolean).join(' · ') || 'No class / coverage on the lead';
+    g('ldmContact').innerHTML = [
+      d.contact_name ? '<span>👤 ' + esc(d.contact_name) + '</span>' : null,
+      ph ? '<span class="phone">✆ ' + esc(ph) + '</span>' : null,
+      d.contact_email ? '<span>✉ ' + esc(d.contact_email) + '</span>' : null,
+      (d.city || d.state) ? '<span>📍 ' + esc([d.city, d.state].filter(Boolean).join(', ')) + '</span>' : null
+    ].filter(Boolean).join('') || '<span style="color:var(--text-muted)">Phone only — no other contact info on the lead</span>';
+
+    var k = esc(key);
+    g('ldmActions').innerHTML =
+      (tel ? '<a class="act-btn primary" href="tel:+1' + tel + '">✆ Call</a>' : '') +
+      (d.contact_email ? '<a class="act-btn" href="mailto:' + esc(d.contact_email) + '">✉ Email</a>' : '') +
+      '<button class="act-btn" style="color:#4ade80;border-color:#22c55e66" onclick="ldIntake(\'' + k + '\')">▶ Start Intake</button>' +
+      '<button class="act-btn" style="color:#c4b5fd" onclick="ldQuote(\'' + k + '\')">⚡ Quick Quote</button>' +
+      '<button class="close-x" onclick="ldClose()">✕</button>';
+
+    // Field grid: known fields first in a sensible order, then anything else BP sent.
+    var keys = Object.keys(d).filter(function(x){ return !HIDE[x]; });
+    var ordered = ORDER.filter(function(x){ return keys.indexOf(x) >= 0; })
+      .concat(keys.filter(function(x){ return ORDER.indexOf(x) < 0 && x[0] !== '_'; }).sort())
+      .concat(keys.filter(function(x){ return ORDER.indexOf(x) < 0 && x[0] === '_'; }).sort());
+    var cells = ordered.map(function(x){
+      var v = fmtVal(x, d[x]); if(v == null) return '';
+      return '<div><div class="k">' + esc(human(x)) + '</div><div class="v">' + v + '</div></div>';
+    }).join('');
+
+    g('ldmBody').innerHTML =
+      '<div class="ldm-status">Lead status ' +
+        '<select class="filter-select" style="padding:5px 9px;font-size:12px" onchange="ldSetStatus(\'' + k + '\',this.value)">' +
+          ['new','called','quoted','won','dead'].map(function(s){ return '<option' + (s === status ? ' selected' : '') + '>' + s + '</option>'; }).join('') +
+        '</select>' +
+        '<span style="color:var(--text-muted);font-size:11.5px">saved as you change it</span>' +
+      '</div>' +
+      '<div class="ldm-sec">Contact attempts</div>' +
+      ldAttemptsHtml(key) +
+      '<div class="ldm-sec">What BoldPenguin sent</div>' +
+      '<div class="ldm-grid">' + (cells || '<div style="color:var(--text-muted)">Nothing beyond the name and phone.</div>') + '</div>' +
+      '<div class="ldm-next"><b>Not in your book yet.</b> This is the raw purchased lead — there is no client record behind it until you run intake. ' +
+        '<b>▶ Start Intake</b> opens the Smart Intake wizard pre-filled with everything above and, when you save, creates the prospect and drops it into the Pipeline. ' +
+        'After that, clicking this row opens the client page instead.</div>';
+
+    g('ldModalBg').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    try{ g('ldModalBg').scrollTop = 0; }catch(e){}
+  };
+
+  // One delegated listener for the whole table, so repaints don't lose the handler.
+  document.addEventListener('click', function(ev){
+    var t = ev.target; if(!t || !t.closest) return;
+    var tr = t.closest('#leadsTable tbody tr.ld-row'); if(!tr) return;
+    if(t.closest('a,button,select,option,input,label')) return; // controls keep their own behaviour
+    var key = tr.getAttribute('data-key'); if(key) ldOpen(key);
+  });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') ldClose(); });
+
+  // If the status is changed from the table while the modal is open, mirror it.
+  if(typeof setLeadStatus === 'function'){
+    var _orig = setLeadStatus;
+    window.setLeadStatus = setLeadStatus = function(key, v){
+      var r = _orig.apply(this, arguments);
+      if(cur === key){ var p = g('ldmStatusPill'); if(p) p.textContent = v; }
+      return r;
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
