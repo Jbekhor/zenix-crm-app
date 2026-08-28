@@ -236,7 +236,7 @@ textarea.q-in{resize:vertical;line-height:1.5}
   <button class="nav-btn active" data-view="priority" onclick="go('priority')">◉ Priority View</button><button class="nav-btn" data-view="pipeline" onclick="go('pipeline')" style="color:#7dd3fc">◫ Pipeline</button>
   <button class="nav-btn" data-view="clients" onclick="go('clients')">▤ Clients</button>
   <button class="nav-btn" data-view="leads" onclick="go('leads')" style="color:#7dd3fc">◎ Leads</button><button class="nav-btn" data-view="tasks" onclick="go('tasks')">☑ Tasks</button>
-  <button class="nav-btn" data-view="intake" onclick="ixStart()" style="color:#4ade80">➕ Smart Intake</button><button class="nav-btn" data-view="qq" onclick="go('qq')" style="color:#c4b5fd">⚡ Quick Quote</button><button class="nav-btn" data-view="markets" onclick="go('markets');renderMarkets()" style="color:#4ade80">◆ Markets</button><button class="nav-btn" data-view="quote" onclick="go('quote')">✚ Full Quote</button>
+  <button class="nav-btn" data-view="intake" onclick="ixStart()" style="color:#4ade80">➕ Smart Intake</button><button class="nav-btn" data-view="qq" onclick="go('qq')" style="color:#c4b5fd">⚡ Quick Quote</button><button class="nav-btn" data-view="markets" onclick="go('markets');renderMarkets()" style="color:#4ade80">◆ Markets</button><button class="nav-btn" data-view="quote" onclick="go('quote')">✚ Full Quote</button><button class="nav-btn" data-view="admin" id="navAdmin" onclick="go('admin');adLoad()" style="display:none;color:#f472b6">⚙ Admin</button>
   <div class="nav-spacer"></div>
   <input class="nav-search" id="globalSearch" placeholder="Search clients..." oninput="globalSearch(this.value)">
   <div class="nav-user"><div class="avatar" id="navAvatar">?</div><span id="navUser">—</span><a href="#" onclick="doSignOut(event)" style="margin-left:10px;font-size:11px;color:var(--text-muted)">Sign out</a></div>
@@ -595,6 +595,35 @@ textarea.q-in{resize:vertical;line-height:1.5}
 </div>
 
 
+<div class="view" id="view-admin">
+  <div class="page-head">
+    <div>
+      <div class="page-title" style="background:linear-gradient(90deg,#f472b6,#c4b5fd);-webkit-background-clip:text;background-clip:text">Admin</div>
+      <div class="page-sub">User accounts &amp; access control — changes apply to the live system immediately.</div>
+    </div>
+    <div class="filters" style="align-items:center">
+      <span id="adStatus" style="font-size:12px;color:var(--text-muted);min-height:14px"></span>
+      <button class="act-btn" onclick="adLoad()">↻ Refresh</button>
+    </div>
+  </div>
+  <div class="stage" style="--stage-c:#f472b6;margin-bottom:18px">
+    <div class="stage-body" style="padding:16px 18px">
+      <div style="font-weight:700;margin-bottom:10px">Add a user</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input class="filter-input" id="adEmail" placeholder="email@company.com" type="email" style="min-width:230px">
+        <input class="filter-input" id="adPass" placeholder="Password (8+ characters)" style="min-width:190px">
+        <select class="filter-select" id="adRole"><option value="member">Member</option><option value="admin">Admin</option></select>
+        <input class="filter-input" id="adNote" placeholder="Note (optional)" style="min-width:150px">
+        <button class="act-btn primary" onclick="adCreate()">＋ Create user</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px">Accounts are created pre-confirmed — no verification email needed. Share the password with the person directly; you can set a new one for them here any time.</div>
+    </div>
+  </div>
+  <div class="stage" style="--stage-c:#c4b5fd">
+    <div class="stage-body"><div style="overflow-x:auto"><table id="adTable"></table></div></div>
+    <div class="stage-foot" id="adFoot"></div>
+  </div>
+</div>
 <div id="authWrap" style="position:fixed;inset:0;z-index:2000;background:var(--bg-base);display:flex;align-items:center;justify-content:center">
   <div style="width:350px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:28px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div class="logo-mark">⚡</div><div style="font-weight:800;font-size:18px;letter-spacing:2px">ZENIX CRM</div></div>
@@ -1349,6 +1378,7 @@ async function enterApp(){
   const em=(user&&user.email)||'—';
   $('navUser').textContent=em; $('navAvatar').textContent=initials(em.split('@')[0].replace(/[._]/g,' '));
   $('authWrap').style.display='none';
+  adCheckAdmin();
   await loadLeads();
   decorate(); initApp(); renderLeads(); qqInit();
   if(typeof plDecorate==='function'){ plDecorate(); renderPipeline(); ixInit(); loadMarkets(); }
@@ -2458,5 +2488,143 @@ function renderMarkets(){
 })();
 </script>
 
+<script>
+/* ================= Admin console (admins only; enforced server-side by the admin-users edge function) ================= */
+let IS_ADMIN=false, AD_USERS=[], AD_OWNER='jamesbekhor@gmail.com';
+
+async function adCheckAdmin(){
+  try{
+    const {data:{user}} = await sb.auth.getUser();
+    if(!user||!user.email) return;
+    const {data} = await sb.from('allowed_users').select('role').eq('email', user.email.toLowerCase()).maybeSingle();
+    if(data && data.role==='admin'){ IS_ADMIN=true; $('navAdmin').style.display=''; }
+  }catch(_){}
+}
+
+function adNote(msg, isErr){ const el=$('adStatus'); el.style.color=isErr?'#fca5a5':'#86efac'; el.textContent=msg||''; }
+
+async function adCall(payload){
+  try{
+    const {data, error} = await sb.functions.invoke('admin-users', { body: payload });
+    if(error){
+      let msg = error.message || 'Request failed';
+      try{ const j = await error.context.json(); if(j && j.error) msg = j.error; }catch(_){}
+      return {error: msg};
+    }
+    return data || {};
+  }catch(e){ return {error: String(e)}; }
+}
+
+async function adLoad(){
+  adNote('Loading users...');
+  const r = await adCall({action:'list'});
+  if(r.error){ adNote(r.error, true); if($('adTable')) $('adTable').innerHTML=''; return; }
+  AD_USERS = r.users || [];
+  if(r.owner) AD_OWNER = r.owner;
+  adRender(); adNote('');
+}
+
+function adRender(){
+  const rows = AD_USERS.map((u,i)=>{
+    const owner = u.email===AD_OWNER;
+    const acct = !u.account ? '<span style="color:#fbbf24">no login yet</span>'
+               : (u.confirmed ? '<span style="color:var(--text-muted)">active</span>' : '<span style="color:#fbbf24">unconfirmed</span>');
+    const access = u.allowed
+      ? '<span style="color:#86efac">✓ Authorized</span>'
+      : '<span style="color:#fca5a5">✗ Not authorized</span>';
+    const roleCell = owner
+      ? '<span style="color:#f472b6;font-weight:600">Owner · Admin</span>'
+      : (u.allowed
+          ? `<select class="filter-select" style="padding:4px 8px" onchange="adSetRole(${i}, this.value)">
+               <option value="member" ${u.role==='member'?'selected':''}>Member</option>
+               <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option></select>`
+          : '<span style="color:var(--text-muted)">—</span>');
+    const pwBtn = u.account
+      ? `<button class="act-btn" onclick="adPwStart(${i})">Reset password</button>`
+      : `<button class="act-btn" onclick="adPwStart(${i})">Create login</button>`;
+    const accessBtn = owner ? '' : (u.allowed
+      ? `<button class="act-btn" onclick="adRevoke(${i})">Revoke access</button>`
+      : `<button class="act-btn" onclick="adAllow(${i})">Authorize</button>`);
+    const delBtn = owner ? '' : `<button class="act-btn" style="color:#fca5a5" onclick="adDelete(${i})">Delete</button>`;
+    return `<tr>
+      <td><div class="biz"><div class="avatar" style="background:linear-gradient(135deg,${avColor(u.email)})">${initials(u.email.split('@')[0].replace(/[._]/g,' '))}</div>
+        <div><b>${esc(u.email)}</b><span>${esc(u.note||'')}</span></div></div></td>
+      <td>${roleCell}</td>
+      <td style="font-size:12px">${access}<div style="font-size:10.5px">${acct}</div></td>
+      <td style="font-size:12px;color:var(--text-secondary)">${u.last_sign_in?fdate(u.last_sign_in):'—'}</td>
+      <td style="text-align:right;white-space:nowrap"><span id="adAct_${i}" style="display:inline-flex;gap:6px;align-items:center">${pwBtn}${accessBtn}${delBtn}</span></td>
+    </tr>`;
+  }).join('');
+  $('adTable').innerHTML = '<thead><tr><th>User</th><th>Role</th><th>Access</th><th>Last sign-in</th><th style="text-align:right">Actions</th></tr></thead><tbody>'+rows+'</tbody>';
+  $('adFoot').textContent = AD_USERS.length+' users · '+AD_USERS.filter(u=>u.allowed).length+' authorized · '+AD_USERS.filter(u=>u.role==='admin').length+' admin';
+}
+
+async function adCreate(){
+  const email=$('adEmail').value.trim().toLowerCase(), password=$('adPass').value,
+        role=$('adRole').value, note=$('adNote').value.trim();
+  if(!email){ adNote('Enter an email', true); return; }
+  if(password.length<8){ adNote('Password must be at least 8 characters', true); return; }
+  adNote('Creating '+email+'...');
+  const r=await adCall({action:'create', email, password, role, note: note||undefined});
+  if(r.error){ adNote(r.error, true); return; }
+  $('adEmail').value=''; $('adPass').value=''; $('adNote').value=''; $('adRole').value='member';
+  adNote(email+' created ✓ — they can sign in right away');
+  adLoad();
+}
+
+function adPwStart(i){
+  const u=AD_USERS[i];
+  $('adAct_'+i).innerHTML=`<input class="filter-input" id="adNewPw_${i}" placeholder="New password (8+)" style="width:160px;padding:5px 9px" onkeydown="if(event.key==='Enter')adPwSave(${i})">
+    <button class="act-btn primary" onclick="adPwSave(${i})">Save</button>
+    <button class="act-btn" onclick="adRender()">✕</button>`;
+  $('adNewPw_'+i).focus();
+}
+async function adPwSave(i){
+  const u=AD_USERS[i], pw=$('adNewPw_'+i).value;
+  if(pw.length<8){ adNote('Password must be at least 8 characters', true); return; }
+  adNote((u.account?'Setting password for ':'Creating login for ')+u.email+'...');
+  const r = u.account
+    ? await adCall({action:'set_password', email:u.email, password:pw})
+    : await adCall({action:'create', email:u.email, password:pw, role:u.role||'member', note:u.note||undefined});
+  if(r.error){ adNote(r.error, true); return; }
+  adNote((u.account?'Password updated for ':'Login created for ')+u.email+' ✓');
+  adLoad();
+}
+
+async function adSetRole(i, role){
+  const u=AD_USERS[i];
+  adNote('Updating role for '+u.email+'...');
+  const r=await adCall({action:'set_role', email:u.email, role});
+  if(r.error){ adNote(r.error, true); adLoad(); return; }
+  adNote(u.email+' is now '+(role==='admin'?'an admin':'a member')+' ✓');
+  u.role=role;
+}
+
+async function adAllow(i){
+  const u=AD_USERS[i];
+  adNote('Authorizing '+u.email+'...');
+  const r=await adCall({action:'allow', email:u.email, role:'member'});
+  if(r.error){ adNote(r.error, true); return; }
+  adNote(u.email+' authorized ✓'); adLoad();
+}
+
+async function adRevoke(i){
+  const u=AD_USERS[i];
+  if(!confirm('Revoke access for '+u.email+'?\n\nTheir login will remain but they will immediately lose access to all CRM data. You can re-authorize them later.')) return;
+  adNote('Revoking '+u.email+'...');
+  const r=await adCall({action:'revoke', email:u.email});
+  if(r.error){ adNote(r.error, true); return; }
+  adNote(u.email+' revoked ✓'); adLoad();
+}
+
+async function adDelete(i){
+  const u=AD_USERS[i];
+  if(!confirm('Permanently DELETE '+u.email+'?\n\nThis removes their login account and their access. This cannot be undone.')) return;
+  adNote('Deleting '+u.email+'...');
+  const r=await adCall({action:'delete', email:u.email});
+  if(r.error){ adNote(r.error, true); return; }
+  adNote(u.email+' deleted ✓'); adLoad();
+}
+</script>
 </body>
 </html>
