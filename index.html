@@ -236,7 +236,7 @@ textarea.q-in{resize:vertical;line-height:1.5}
   <button class="nav-btn active" data-view="priority" onclick="go('priority')">◉ Priority View</button><button class="nav-btn" data-view="pipeline" onclick="go('pipeline')" style="color:#7dd3fc">◫ Pipeline</button>
   <button class="nav-btn" data-view="clients" onclick="go('clients')">▤ Clients</button>
   <button class="nav-btn" data-view="leads" onclick="go('leads')" style="color:#7dd3fc">◎ Leads</button><button class="nav-btn" data-view="tasks" onclick="go('tasks')">☑ Tasks</button>
-  <button class="nav-btn" data-view="intake" onclick="ixStart()" style="color:#4ade80">➕ Smart Intake</button><button class="nav-btn" data-view="qq" onclick="go('qq')" style="color:#c4b5fd">⚡ Quick Quote</button><button class="nav-btn" data-view="markets" onclick="go('markets');renderMarkets()" style="color:#4ade80">◆ Markets</button><button class="nav-btn" data-view="quote" onclick="go('quote')">✚ Full Quote</button>
+  <button class="nav-btn" data-view="intake" onclick="ixStart()" style="color:#4ade80">➕ Smart Intake</button><button class="nav-btn" data-view="qq" onclick="go('qq')" style="color:#c4b5fd">⚡ Quick Quote</button><button class="nav-btn" data-view="markets" onclick="go('markets');renderMarkets()" style="color:#4ade80">◆ Markets</button><button class="nav-btn" data-view="atrisk" onclick="go('atrisk');renderAtRisk()" style="color:#fca5a5">⚠ At-Risk</button><button class="nav-btn" data-view="quote" onclick="go('quote')">✚ Full Quote</button>
   <div class="nav-spacer"></div>
   <input class="nav-search" id="globalSearch" placeholder="Search clients..." oninput="globalSearch(this.value)">
   <div class="nav-user"><div class="avatar" id="navAvatar">?</div><span id="navUser">—</span><a href="#" onclick="doSignOut(event)" style="margin-left:10px;font-size:11px;color:var(--text-muted)">Sign out</a></div>
@@ -566,6 +566,25 @@ textarea.q-in{resize:vertical;line-height:1.5}
   </div>
 </div>
 
+<!-- ================= AT-RISK (premium finance) ================= -->
+<div class="view" id="view-atrisk">
+  <div class="page-head">
+    <div>
+      <div class="page-title" style="background:linear-gradient(90deg,#fca5a5,#f59e0b);-webkit-background-clip:text;background-clip:text">At-Risk — Premium Finance</div>
+      <div class="page-sub">Financed policies heading toward cancellation for non-payment. Call these before they lapse. From IPFS.</div>
+    </div>
+    <div class="filters">
+      <input class="filter-input" id="arSearch" placeholder="Search insured..." oninput="renderAtRisk()">
+      <select class="filter-select" id="arStatus" onchange="renderAtRisk()"><option value="risk">At-risk only</option><option value="">All financed</option><option>DELINQUENT</option><option>GRACE</option><option>CANCELLED</option><option>CURRENT</option></select>
+    </div>
+  </div>
+  <div class="kpi-row" id="arKpis"></div>
+  <div class="stage" style="--stage-c:#f59e0b">
+    <div class="stage-body"><div style="overflow-x:auto"><table id="atriskTable"></table></div></div>
+    <div class="stage-foot" id="arFoot"></div>
+  </div>
+</div>
+
 <datalist id="ixBookList"></datalist>
 
 <!-- ================= CLIENT MODAL ================= -->
@@ -862,7 +881,7 @@ function renderDashboard(){
      <div class="stat-line"><span>Policy events from email</span><b>238</b></div>
      <div class="stat-line"><span>Email-only clients (need folders)</span><b>${CLIENTS.filter(c=>c.source==='email').length}</b></div>
      <div class="stat-line"><span>2026 payment receipts</span><b>${(SIDECAR.receiptsSummary||{}).receipts2026||'—'}</b></div>
-     <div style="font-size:10.5px;color:var(--text-muted);margin-top:8px">${esc(SIDECAR.verifiedAt||'')}</div></div>`;
+     <div style="font-size:10.5px;color:var(--text-muted);margin-top:8px">${esc(SIDECAR.verifiedAt||'')}</div></div>${(typeof commissionCardHtml==='function')?commissionCardHtml():''}`;
 }
 
 /* ---------- clients view ---------- */
@@ -2067,18 +2086,80 @@ function ixCcPick(arg){
 function ixCcClear(){ IX.classCode=''; IX.naics=''; IX.classDesc=''; const pk=$('ixCcPick'); if(pk) pk.innerHTML=''; }
 
 /* ================= MARKETS directory ================= */
-let MARKETS=[]; let _mkLoaded=false; let STATE_FEES={}; let FORMS=[];
+let MARKETS=[]; let _mkLoaded=false; let STATE_FEES={}; let FORMS=[]; let IPFS=[];
 async function loadMarkets(){
   try{
-    const [mk,sf,fm]=await Promise.all([
+    const [mk,sf,fm,ip]=await Promise.all([
       sb.from('markets').select('*').order('name'),
       sb.from('state_fees').select('*'),
-      sb.from('forms').select('*')
+      sb.from('forms').select('*'),
+      sb.from('ipfs').select('*')
     ]);
     MARKETS=mk.data||[]; _mkLoaded=true;
     STATE_FEES={}; (sf.data||[]).forEach(r=>{ STATE_FEES[r.state]=r; });
-    FORMS=fm.data||[];
+    FORMS=fm.data||[]; IPFS=ip.data||[];
+    _MKI=null;
+    if(typeof rerenderAll==='function') rerenderAll();
+    if($('atriskTable')) renderAtRisk();
   }catch(e){ if(!MARKETS)MARKETS=[]; }
+}
+
+/* ================= AT-RISK (premium finance) ================= */
+const _normName = s => String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const RISK_RANK={CANCELLED:0,DELINQUENT:1,GRACE:2,CURRENT:3};
+function arDays(d){ if(!d) return null; const t=new Date(d+'T00:00:00'); if(isNaN(t)) return null; return Math.round((t-NOW)/86400000); }
+function renderAtRisk(){
+  if(!$('atriskTable')) return;
+  const q=($('arSearch')?$('arSearch').value:'').toLowerCase(), st=$('arStatus')?$('arStatus').value:'risk';
+  let rows=IPFS.filter(r=>{
+    if(q && !((r.insured||'')+' '+(r.policy_no||'')).toLowerCase().includes(q)) return false;
+    if(st==='risk' && (r.status||'').toUpperCase()==='CURRENT') return false;
+    if(st && st!=='risk' && (r.status||'').toUpperCase()!==st) return false;
+    return true;
+  });
+  rows.sort((a,b)=>{ const ra=RISK_RANK[(a.status||'').toUpperCase()]??9, rb=RISK_RANK[(b.status||'').toUpperCase()]??9; if(ra!==rb) return ra-rb; return String(a.eligible_cancel_date||'zz').localeCompare(String(b.eligible_cancel_date||'zz')); });
+  const up=(s)=>String(s||'').toUpperCase();
+  const risk=IPFS.filter(r=>up(r.status)!=='CURRENT');
+  $('arKpis').innerHTML=[
+    ['⚠', 'At-risk accounts', risk.length],
+    ['⛔','Cancelled', IPFS.filter(r=>up(r.status)==='CANCELLED').length],
+    ['🕐','Delinquent / grace', IPFS.filter(r=>['DELINQUENT','GRACE'].includes(up(r.status))).length],
+    ['🏦','Financed on file', IPFS.length]
+  ].map(k=>`<div class="kpi"><span class="ic">${k[0]}</span><h4>${k[2]}</h4><p>${k[1]}</p></div>`).join('');
+  const pill=s=>{ s=up(s); const map={CANCELLED:'p-expired',DELINQUENT:'p-expired',GRACE:'p-due',CURRENT:'p-bound'}; return `<span class="pill ${map[s]||'p-unknown'}">${esc(s||'—')}</span>`; };
+  const clientByNorm=()=>{ try{ return (typeof clientIndex==='function')?clientIndex().byName:null; }catch(e){ return null; } };
+  $('atriskTable').innerHTML='<thead><tr><th>Insured</th><th>Status</th><th>Acct #</th><th>Balance</th><th>Eligible cancel</th><th>AutoPay</th><th></th></tr></thead><tbody>'+
+    (rows.map(r=>{ const d=arDays(r.eligible_cancel_date); const dcls=d==null?'':(d<=7?'d-red':(d<=30?'d-amber':'d-ok'));
+      const idx=clientByNorm(); const c=idx?idx.get(_normName(r.insured)):null;
+      return `<tr ${c?`onclick="openModal(${c._id})" style="cursor:pointer"`:''}>
+        <td style="font-weight:600">${esc(r.insured||'—')}${c?' <span class="pill" style="font-size:9px;background:#8b5cf622;color:#c4b5fd;border-color:#8b5cf555">in book</span>':''}</td>
+        <td>${pill(r.status)}</td>
+        <td style="font-family:ui-monospace,monospace;font-size:11px;color:var(--text-secondary)">${esc(r.policy_no||'—')}</td>
+        <td style="font-variant-numeric:tabular-nums">${r.account_balance!=null?fmt$(r.account_balance):(r.amount_due!=null?fmt$(r.amount_due):'—')}</td>
+        <td>${r.eligible_cancel_date?`<span class="date-chip">${esc(r.eligible_cancel_date)}</span>${d!=null?`<span class="days ${dcls}">${d}d</span>`:''}`:'—'}</td>
+        <td>${up(r.autopay)==='YES'?'<span style="color:#4ade80">✓ ACH</span>':'<span style="color:#fca5a5">off</span>'}</td>
+        <td>${r.insured?`<a class="act-btn primary" style="padding:4px 10px" href="tel:">✆ Call</a>`:''}</td></tr>`; }).join('')||'<tr><td colspan="7"><div class="empty-note">Nothing here — no at-risk financed accounts.</div></td></tr>')+'</tbody>';
+  $('arFoot').textContent=`● ${rows.length} shown of ${IPFS.length} financed accounts · IPFS import (freshest data on file)`;
+}
+
+/* ================= Commission roll-up ================= */
+let _MKI=null;
+function _mkList(){ if(_MKI) return _MKI; _MKI=(MARKETS||[]).filter(m=>m.commission_new!=null).map(m=>({k:_normName(m.name),rate:Number(m.commission_new)})); return _MKI; }
+function _rateFor(carrier){ const c=_normName(carrier); if(!c) return null; for(const m of _mkList()){ if(m.k.length>=3 && (c===m.k || c.includes(m.k))) return m.rate; } return null; }
+function commissionByProducer(){
+  const out={}; let matched=0, total=0;
+  (CLIENTS||[]).forEach(cl=>{ const ag=cl.assignedTo||'Unassigned';
+    (cl.policies||[]).forEach(p=>{ if(p.status==='bound' && typeof p.premium==='number'){ total++; const r=_rateFor(p.carrier); if(r!=null){ matched++; out[ag]=(out[ag]||0)+p.premium*r/100; } } });
+  });
+  return {out, matched, total};
+}
+function commissionCardHtml(){
+  if(!MARKETS||!MARKETS.length) return '';
+  const {out,matched}=commissionByProducer();
+  const rows=Object.entries(out).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length) return '';
+  const body=rows.map(([a,v])=>`<div class="leader-row"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:linear-gradient(135deg,${(typeof AGENT_COLORS!=='undefined'&&AGENT_COLORS[a])||'#6d5ef0,#06b6d4'})">${initials(a)}</div><div class="nm">${esc(a)}</div><div class="val">${fmt$(v)}</div></div>`).join('');
+  return `<div class="card" style="grid-column:span 4"><h3><span class="bar-ind" style="background:#22c55e"></span>Est. Commission by Producer</h3>${body}<div style="font-size:10.5px;color:var(--text-muted);margin-top:8px">Estimate: bound premium × carrier commission %, on ${matched} policies matched to a market rate.</div></div>`;
 }
 function ixFeeComplianceHtml(){
   if(!IX.state) return '';
