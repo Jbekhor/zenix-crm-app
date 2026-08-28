@@ -2703,7 +2703,7 @@ function apNorm(c) {
   const exp = cov.expiration || q.term && q.term.split(' - ')[1] || apDate(pol.expirationDate) || '';
 
   const m = {
-    id: c.id, custId: apCustId(c),
+    id: c._rowId || c.id || null, custId: apCustId(c),
     name: ins.legal_name || c.businessName || c.folderName || '',
     dba: ins.dba || c.dba || '',
     entity: ins.entity_type || c.entityType || '',
@@ -2735,7 +2735,7 @@ function apNorm(c) {
 }
 function apCustId(c) {
   const n = (c.businessName || c.folderName || 'ACCOUNT').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim().split(' ');
-  return (n[0] || 'ACCT').slice(0, 8) + '-' + String(c.id || '').slice(0, 4).toUpperCase();
+  return (n[0] || 'ACCT').slice(0, 8) + '-' + String(c._rowId || c.id || '').slice(0, 4).toUpperCase();
 }
 
 /* ---------------- gap detection ---------------- */
@@ -2759,7 +2759,7 @@ function apGaps(m, codes) {
     need(!m.quote.carrier, 'Underlying GL carrier and limits (ACORD 131 underlying schedule)');
   }
   // fold in the deal's own open items without repeating what was just derived
-  const key = t => String(t).toLowerCase().replace(/[^a-z0-9 ]/g,'').split(/\s+/).slice(0,3).join(' ');
+  const key = t => { const w = String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(x=>x.length>3); return w.slice(0,2).join(' '); };
   const seen = new Set(g.map(key));
   for (const it of (m.openItems || [])) {
     const k = key(it);
@@ -3066,7 +3066,7 @@ const AP_MAPPERS = { '125': apMap125, '126': apMap126, '131': apMap131 };
 async function apFillPdf(code, values) {
   const { PDFDocument, StandardFonts, rgb, PDFName } = PDFLib;
   const bytes = AP_BLANKS[code];
-  const doc = await PDFDocument.load(bytes);
+  const doc = await PDFDocument.load(bytes, { parseSpeed: PDFLib.ParseSpeeds.Fastest });
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const pages = doc.getPages();
@@ -3123,7 +3123,7 @@ async function apFillPdf(code, values) {
   pages.forEach(p => p.node.set(PDFName.of('Annots'), doc.context.obj([])));
   try { doc.catalog.delete(PDFName.of('AcroForm')); } catch (e) { }
   if (missing.length) console.warn('ACORD ' + code + ': unmapped field names', missing);
-  return await doc.save();
+  return await doc.save({ updateFieldAppearances: false });
 }
 function apIsMultiline(fl) {
   try { return !!(fl.acroField.getFlags && (fl.acroField.getFlags() & 4096)); } catch (e) { return false; }
@@ -3145,11 +3145,11 @@ async function apMergePdfs(list) {
   const { PDFDocument } = PDFLib;
   const out = await PDFDocument.create();
   for (const f of list) {
-    const src = await PDFDocument.load(f.pdfBytes);
+    const src = await PDFDocument.load(f.pdfBytes, { parseSpeed: PDFLib.ParseSpeeds.Fastest });
     const pages = await out.copyPages(src, src.getPageIndices());
     pages.forEach(p => out.addPage(p));
   }
-  return await out.save();
+  return await out.save({ updateFieldAppearances: false });
 }
 
 /* =====================================================================
@@ -3362,24 +3362,19 @@ function apToggle(code) {
 
 async function apBuild() {
   const out = $('apOut');
-  out.innerHTML = `<div class="empty-note">Building ${AP_SEL.length} form${AP_SEL.length > 1 ? 's' : ''}…</div>`;
+  out.innerHTML = `<div class="empty-note">Preparing ${AP_SEL.length} form${AP_SEL.length > 1 ? 's' : ''}…</div>`;
   try {
-    await apLoadScript(AP_PDFLIB);
     const c = mClient, m = apNorm(c);
     const gaps = apGaps(m, AP_SEL);
-    const forms = [];
-    for (const code of AP_SEL) {
+    const forms = AP_SEL.map(code => {
       const meta = AP_CATALOG.find(f => f.code === code);
-      if (!AP_BLANKS[code]) {
-        const r = await fetch(AP_FORMS_URL + meta.storage_path);
-        if (!r.ok) throw new Error(`blank ACORD ${code} did not load (${r.status})`);
-        AP_BLANKS[code] = await r.arrayBuffer();
-      }
       const values = AP_MAPPERS[code](m);
-      const filled = Object.values(values).filter(v => v !== '' && v != null).length;
-      const pdfBytes = await apFillPdf(code, values);
-      forms.push({ code, title: meta.title, meta, pdfBytes, filled, html: apSheetHtml(code, m, meta) });
-    }
+      return {
+        code, title: meta.title, meta, values,
+        filled: Object.values(values).filter(v => v !== '' && v != null).length,
+        html: apSheetHtml(code, m, meta), pdfBytes: null
+      };
+    });
     AP_BUILT = { model: m, forms, gaps };
     apRenderOut();
     apSaveRecord(m, gaps);
@@ -3387,6 +3382,38 @@ async function apBuild() {
     out.innerHTML = `<div class="note-box" style="background:#ef444412;border-color:#ef444444;color:#fca5a5">Build failed: ${esc(e.message || e)}</div>`;
     console.error(e);
   }
+}
+
+/* PDFs are heavier than the HTML sheets, so they are produced only when asked
+   for, one form at a time, yielding to the browser so the tab stays alive. */
+function apStatus(msg) {
+  const el = $('apStatus'); if (el) el.textContent = msg || '';
+}
+const apYield = () => new Promise(r => setTimeout(r, 0));
+
+async function apEnsurePdf(i) {
+  const f = AP_BUILT.forms[i];
+  if (f.pdfBytes) return f.pdfBytes;
+  apStatus(`Building the ACORD ${f.code} PDF…`);
+  await apLoadScript(AP_PDFLIB);
+  await apYield();
+  if (!AP_BLANKS[f.code]) {
+    const r = await fetch(AP_FORMS_URL + f.meta.storage_path);
+    if (!r.ok) throw new Error(`blank ACORD ${f.code} did not load (${r.status})`);
+    AP_BLANKS[f.code] = await r.arrayBuffer();
+  }
+  await apYield();
+  f.pdfBytes = await apFillPdf(f.code, f.values);
+  apStatus('');
+  return f.pdfBytes;
+}
+async function apEnsureAll() {
+  for (let i = 0; i < AP_BUILT.forms.length; i++) {
+    apStatus(`Building PDFs… ${i + 1} of ${AP_BUILT.forms.length}`);
+    await apEnsurePdf(i);
+    await apYield();
+  }
+  apStatus('');
 }
 
 function apRenderOut() {
@@ -3410,7 +3437,8 @@ function apRenderOut() {
         <button class="act-btn" onclick="apPdfOne(${i})">⬇ PDF</button>
         <button class="act-btn" onclick="apPrintPdf(${i})">🖨 PDF</button>
       </div>`).join('')}
-    <div style="font-size:11px;color:var(--text-muted);margin-top:10px">Generated from the live deal record for ${esc(model.name)}. Blank values print as a dash so nothing reads as answered when it is not.</div>
+    <div id="apStatus" style="font-size:11.5px;color:#c4b5fd;margin-top:10px;min-height:16px"></div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Generated from the live deal record for ${esc(model.name)}. Blank values print as a dash so nothing reads as answered when it is not.</div>
   </div>`;
 }
 
@@ -3432,10 +3460,10 @@ function apOpenPdf(bytes) {
 }
 function apPrintHtml(i) { const f = AP_BUILT.forms[i]; apOpenPrint(apDocHtml(f.html, AP_BUILT.model, AP_BUILT.gaps)); }
 function apPrintAllHtml() { apOpenPrint(apDocHtml(AP_BUILT.forms.map(f => f.html).join(''), AP_BUILT.model, AP_BUILT.gaps)); }
-function apPdfOne(i) { const f = AP_BUILT.forms[i]; apDownload(f.pdfBytes, apFileName(AP_BUILT.model, f.code)); }
-function apPrintPdf(i) { apOpenPdf(AP_BUILT.forms[i].pdfBytes); }
-async function apPdfCombined() { apDownload(await apMergePdfs(AP_BUILT.forms), apFileName(AP_BUILT.model, null)); }
-async function apPrintCombinedPdf() { apOpenPdf(await apMergePdfs(AP_BUILT.forms)); }
+async function apPdfOne(i) { try { const b = await apEnsurePdf(i); apDownload(b, apFileName(AP_BUILT.model, AP_BUILT.forms[i].code)); } catch (e) { apStatus('PDF failed: ' + (e.message || e)); } }
+async function apPrintPdf(i) { try { apOpenPdf(await apEnsurePdf(i)); } catch (e) { apStatus('PDF failed: ' + (e.message || e)); } }
+async function apPdfCombined() { try { await apEnsureAll(); apStatus('Merging…'); const b = await apMergePdfs(AP_BUILT.forms); apStatus(''); apDownload(b, apFileName(AP_BUILT.model, null)); } catch (e) { apStatus('PDF failed: ' + (e.message || e)); } }
+async function apPrintCombinedPdf() { try { await apEnsureAll(); apStatus('Merging…'); const b = await apMergePdfs(AP_BUILT.forms); apStatus(''); apOpenPdf(b); } catch (e) { apStatus('PDF failed: ' + (e.message || e)); } }
 
 async function apSaveRecord(m, gaps) {
   try {
